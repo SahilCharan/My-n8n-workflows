@@ -1,0 +1,762 @@
+{
+    "name": "Fashion Content Generation with Sora",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 5
+              }
+            ]
+          }
+        },
+        "name": "Cron Trigger - 5x Daily",
+        "type": "n8n-nodes-base.cron",
+        "typeVersion": 1,
+        "position": [0, 400],
+        "id": "cron-trigger"
+      },
+      {
+        "parameters": {
+          "resource": "folder",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "root"
+          },
+          "options": {}
+        },
+        "name": "Check for New Fabric Images",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [200, 400],
+        "id": "check-fabric-images"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.files.length }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        },
+        "name": "Check if Images Found",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [400, 400],
+        "id": "check-images-condition"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": "={{ $json.files[0].id }}",
+          "options": {}
+        },
+        "name": "Download Fabric Image",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [600, 400],
+        "id": "download-fabric-image"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "name": "fabricImage",
+                "value": "={{ $binary.data }}",
+                "type": "object"
+              },
+              {
+                "name": "categories",
+                "value": "=[\n  {\n    \"section\": \"Men\",\n    \"garments\": [\"Shirt\", \"T-Shirt\", \"Pants\", \"Kurta\", \"Jacket\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Ethnic\", \"Western\"]\n  },\n  {\n    \"section\": \"Women\",\n    \"garments\": [\"Dress\", \"Blouse\", \"Saree\", \"Kurti\", \"Skirt\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Ethnic\", \"Party Wear\"]\n  },\n  {\n    \"section\": \"Kids\",\n    \"garments\": [\"T-Shirt\", \"Dress\", \"Shorts\", \"School Uniform\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Playful\", \"School\"]\n  }\n]",
+                "type": "array"
+              },
+              {
+                "name": "originalFileName",
+                "value": "={{ $('Download Fabric Image').first().json.name }}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "name": "Set Clothing Categories",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [800, 400],
+        "id": "set-clothing-categories"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "name": "selectedGarment",
+                "value": "={{ $json.categories[0].garments[Math.floor(Math.random() * $json.categories[0].garments.length)] }}",
+                "type": "string"
+              },
+              {
+                "name": "selectedStyle",
+                "value": "={{ $json.categories[0].styles[Math.floor(Math.random() * $json.categories[0].styles.length)] }}",
+                "type": "string"
+              },
+              {
+                "name": "selectedSection",
+                "value": "={{ $json.categories[0].section }}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "name": "Select Random Garment & Style",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [1000, 400],
+        "id": "select-random-garment"
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "prompt": "Create a high-quality, professional product photo of a {{ $json.selectedSection.toLowerCase() }}'s {{ $json.selectedGarment }} made from this fabric pattern. The garment should be {{ $json.selectedStyle }} style, displayed on a clean white background, studio lighting, professional fashion photography, 4K quality, suitable for e-commerce. The fabric pattern should be clearly visible and well-integrated into the garment design. Indian fashion brand style.",
+          "options": {
+            "size": "1024x1024",
+            "quality": "standard"
+          }
+        },
+        "name": "Generate Clothing Image",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [1200, 400],
+        "id": "generate-clothing-image",
+        "credentials": {
+          "openAiApi": {
+            "id": "your-openai-credential-id",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list"
+          },
+          "text": "You are a social media expert for fashion brands. Create engaging captions with relevant hashtags for Indian clothing brands. Format the response as:\n\nInstagram: [Instagram caption with hashtags]\nFacebook: [Facebook caption with hashtags]\nYouTube: [YouTube description with hashtags]",
+          "imageUrls": "={{ $('Generate Clothing Image').first().json.data[0].url }}",
+          "options": {
+            "detail": "high"
+          }
+        },
+        "name": "Generate Captions",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [1400, 400],
+        "id": "generate-captions",
+        "credentials": {
+          "openAiApi": {
+            "id": "your-openai-credential-id",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "You are a creative content creator for fashion reels. Based on this clothing brand image and caption:\n\nCaption: {{ $('Generate Captions').first().json.choices[0].message.content }}\n\nCreate a detailed video concept for a 10-second Instagram Reel that showcases this {{ $json.selectedGarment }} in {{ $json.selectedStyle }} style. Include:\n- Visual sequence (what happens in each second)\n- Camera movements\n- Music/audio suggestions\n- Text overlays\n- Transitions\n\nMake it engaging and suitable for fashion marketing.",
+                "role": "user"
+              }
+            ]
+          }
+        },
+        "name": "Generate Reel Concept",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [1600, 400],
+        "id": "generate-reel-concept",
+        "credentials": {
+          "openAiApi": {
+            "id": "your-openai-credential-id",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/videos/generations",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ $credentials.openAiApi.apiKey }}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "model",
+                "value": "sora-1.0"
+              },
+              {
+                "name": "prompt",
+                "value": "Fashion reel video: {{ $('Generate Reel Concept').first().json.choices[0].message.content }}. Create a professional, high-quality 10-second video showcasing a {{ $json.selectedGarment }} in {{ $json.selectedStyle }} style. Include smooth camera movements, good lighting, and fashion-forward presentation suitable for Instagram."
+              },
+              {
+                "name": "duration",
+                "value": "10"
+              },
+              {
+                "name": "size",
+                "value": "1080x1920"
+              },
+              {
+                "name": "quality",
+                "value": "standard"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 300000
+          }
+        },
+        "name": "Generate Reel Video with Sora",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [1800, 400],
+        "id": "generate-reel-video",
+        "credentials": {
+          "openAiApi": {
+            "id": "your-openai-credential-id",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "={{ $json.video_url }}",
+          "options": {
+            "timeout": 300000,
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "name": "Download Generated Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [2000, 400],
+        "id": "download-generated-video"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "name": "generatedImageUrl",
+                "value": "={{ $('Generate Clothing Image').first().json.data[0].url }}",
+                "type": "string"
+              },
+              {
+                "name": "captions",
+                "value": "={{ $('Generate Captions').first().json.choices[0].message.content }}",
+                "type": "string"
+              },
+              {
+                "name": "reelConcept",
+                "value": "={{ $('Generate Reel Concept').first().json.choices[0].message.content }}",
+                "type": "string"
+              },
+              {
+                "name": "videoUrl",
+                "value": "={{ $('Generate Reel Video with Sora').first().json.video_url }}",
+                "type": "string"
+              },
+              {
+                "name": "fileName",
+                "value": "={{ $json.selectedSection }}_{{ $json.selectedGarment.replace(/\\s+/g, '_') }}_{{ new Date().toISOString().slice(0,10) }}_{{ Math.random().toString(36).substr(2, 9) }}",
+                "type": "string"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ new Date().toISOString() }}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "name": "Parse AI Responses",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [2200, 400],
+        "id": "parse-ai-responses"
+      },
+      {
+        "parameters": {
+          "name": "={{ $json.fileName }}.jpg",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "root"
+          },
+          "options": {}
+        },
+        "name": "Save Generated Image",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [2400, 300],
+        "id": "save-generated-image"
+      },
+      {
+        "parameters": {
+          "name": "={{ $json.fileName }}.mp4",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "root"
+          },
+          "binaryData": true,
+          "options": {}
+        },
+        "name": "Save Generated Video",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [2400, 500],
+        "id": "save-generated-video"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "YOUR_GOOGLE_SHEETS_ID",
+            "mode": "id"
+          },
+          "sheetName": "Content_Log",
+          "options": {}
+        },
+        "name": "Log to Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [2600, 400],
+        "id": "log-to-sheets"
+      },
+      {
+        "parameters": {
+          "amount": 10
+        },
+        "name": "Wait - Rate Limiting",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [2800, 400],
+        "id": "wait-rate-limiting"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.instagram.com/v18.0/YOUR_INSTAGRAM_ACCOUNT_ID/media",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_INSTAGRAM_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "media_type",
+                "value": "VIDEO"
+              },
+              {
+                "name": "video_url",
+                "value": "={{ $json.videoUrl }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.captions.split('Instagram')[1] ? $json.captions.split('Instagram')[1].split('Facebook')[0].trim() : 'New arrival! Check out our latest collection. #fashion #clothing #style' }}"
+              },
+              {
+                "name": "access_token",
+                "value": "YOUR_INSTAGRAM_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Instagram - Create Video Media",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [3000, 300],
+        "id": "instagram-create-video"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.instagram.com/v18.0/YOUR_INSTAGRAM_ACCOUNT_ID/media_publish",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_INSTAGRAM_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "creation_id",
+                "value": "={{ $('Instagram - Create Video Media').first().json.id }}"
+              },
+              {
+                "name": "access_token",
+                "value": "YOUR_INSTAGRAM_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Instagram - Publish Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [3200, 300],
+        "id": "instagram-publish-video"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.facebook.com/v18.0/YOUR_FACEBOOK_PAGE_ID/videos",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_FACEBOOK_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "description",
+                "value": "={{ $json.captions.split('Facebook')[1] ? $json.captions.split('Facebook')[1].split('YouTube')[0].trim() : 'Check out our latest fashion collection! Made with premium fabrics and contemporary designs.' }}"
+              },
+              {
+                "name": "file_url",
+                "value": "={{ $json.videoUrl }}"
+              },
+              {
+                "name": "access_token",
+                "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Facebook - Upload Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [3000, 500],
+        "id": "facebook-upload-video"
+      },
+      {
+        "parameters": {
+          "chatId": "YOUR_TELEGRAM_CHAT_ID",
+          "text": "✅ Content Generated Successfully!\n\n📱 Instagram Reel: Published\n📘 Facebook Video: Published\n🎬 Video: {{ $json.fileName }}.mp4\n🖼️ Image: {{ $json.fileName }}.jpg\n\nGenerated at: {{ $json.timestamp }}",
+          "additionalFields": {}
+        },
+        "name": "Success Notification",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [3400, 400],
+        "id": "success-notification"
+      }
+    ],
+    "connections": {
+      "Cron Trigger - 5x Daily": {
+        "main": [
+          [
+            {
+              "node": "Check for New Fabric Images",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check for New Fabric Images": {
+        "main": [
+          [
+            {
+              "node": "Check if Images Found",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check if Images Found": {
+        "main": [
+          [
+            {
+              "node": "Download Fabric Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Fabric Image": {
+        "main": [
+          [
+            {
+              "node": "Set Clothing Categories",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Clothing Categories": {
+        "main": [
+          [
+            {
+              "node": "Select Random Garment & Style",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Select Random Garment & Style": {
+        "main": [
+          [
+            {
+              "node": "Generate Clothing Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Clothing Image": {
+        "main": [
+          [
+            {
+              "node": "Generate Captions",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Captions": {
+        "main": [
+          [
+            {
+              "node": "Generate Reel Concept",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Reel Concept": {
+        "main": [
+          [
+            {
+              "node": "Generate Reel Video with Sora",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Reel Video with Sora": {
+        "main": [
+          [
+            {
+              "node": "Download Generated Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Generated Video": {
+        "main": [
+          [
+            {
+              "node": "Parse AI Responses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse AI Responses": {
+        "main": [
+          [
+            {
+              "node": "Save Generated Image",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Generated Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Generated Image": {
+        "main": [
+          [
+            {
+              "node": "Log to Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Generated Video": {
+        "main": [
+          [
+            {
+              "node": "Log to Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log to Google Sheets": {
+        "main": [
+          [
+            {
+              "node": "Wait - Rate Limiting",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait - Rate Limiting": {
+        "main": [
+          [
+            {
+              "node": "Instagram - Create Video Media",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Facebook - Upload Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Instagram - Create Video Media": {
+        "main": [
+          [
+            {
+              "node": "Instagram - Publish Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Instagram - Publish Video": {
+        "main": [
+          [
+            {
+              "node": "Success Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Facebook - Upload Video": {
+        "main": [
+          [
+            {
+              "node": "Success Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    }
+  }

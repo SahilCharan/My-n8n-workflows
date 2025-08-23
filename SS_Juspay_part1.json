@@ -1,0 +1,833 @@
+{
+    "name": "Ultimate Social Media Automation - Merged",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "social-media-automation",
+          "options": {}
+        },
+        "id": "webhook-trigger",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [240, 300]
+      },
+      {
+        "parameters": {
+          "url": "https://serpapi.com/search",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "q",
+                "value": "={{ $json.keywords }} trending social media"
+              },
+              {
+                "name": "api_key",
+                "value": "{{ $credentials.serpApi.apiKey }}"
+              },
+              {
+                "name": "engine",
+                "value": "google"
+              },
+              {
+                "name": "num",
+                "value": "5"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "serp-research",
+        "name": "SERP Content Research",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [460, 300],
+        "credentials": {
+          "serpApi": {
+            "id": "serp-credentials",
+            "name": "SERP API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "operation": "exists"
+            },
+            "conditions": [
+              {
+                "id": "content-type-check",
+                "leftValue": "={{ $json.content_type }}",
+                "rightValue": "video",
+                "operation": "equal"
+              }
+            ],
+            "combineOperation": "any"
+          }
+        },
+        "id": "content-type-switch",
+        "name": "Content Type Switch",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 1,
+        "position": [680, 300]
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "generate",
+          "model": "dall-e-3",
+          "prompt": "={{ $json.image_prompt || 'Create a visually appealing image for social media about: ' + $json.topic }}",
+          "options": {
+            "size": "1024x1024",
+            "quality": "hd",
+            "style": "vivid"
+          }
+        },
+        "id": "dalle-image-generator",
+        "name": "DALL-E Image Generator",
+        "type": "n8n-nodes-base.openAi",
+        "typeVersion": 1,
+        "position": [900, 200],
+        "credentials": {
+          "openAiApi": {
+            "id": "openai-credentials",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract image data from DALL-E response and get original webhook data\nconst dalleResponse = $input.all()[0]?.json;\nconst webhookData = $input.all()[1]?.json || {};\n\nif (dalleResponse && dalleResponse.data && dalleResponse.data[0]) {\n  const imageUrl = dalleResponse.data[0].url;\n  const imageData = dalleResponse.data[0].b64_json;\n  \n  return {\n    ...webhookData,\n    image_url: imageUrl,\n    image_data: imageData,\n    timestamp: new Date().toISOString()\n  };\n}\n\nreturn {\n  ...webhookData,\n  image_url: '',\n  image_data: '',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "image-processor",
+        "name": "Image Processor",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1120, 200]
+      },
+      {
+        "parameters": {
+          "url": "https://api.stability.ai/v1/generation/stable-video-diffusion-img2vid-xt/image-to-video",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "stabilityAiApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ $credentials.stabilityAiApi.apiKey }}"
+              },
+              {
+                "name": "Accept",
+                "value": "video/*"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "image",
+                "value": "={{ $json.image_data }}"
+              },
+              {
+                "name": "cfg_scale",
+                "value": "1.8"
+              },
+              {
+                "name": "motion_bucket_id",
+                "value": "127"
+              },
+              {
+                "name": "seed",
+                "value": "0"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 60000,
+            "retry": {
+              "enabled": true,
+              "maxRetries": 3
+            }
+          }
+        },
+        "id": "stability-video-generator",
+        "name": "Stability AI Video Generator",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [900, 400],
+        "credentials": {
+          "stabilityAiApi": {
+            "id": "stability-credentials",
+            "name": "Stability AI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract video data from Stability AI response and preserve original data\nconst stabilityResponse = $input.all()[0]?.json;\nconst originalData = $input.all()[1]?.json || {};\n\nif (stabilityResponse && stabilityResponse.video) {\n  return {\n    ...originalData,\n    video_url: stabilityResponse.video,\n    video_data: stabilityResponse.video,\n    timestamp: new Date().toISOString()\n  };\n}\n\nreturn {\n  ...originalData,\n  video_url: '',\n  video_data: '',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "video-processor",
+        "name": "Video Processor",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1120, 400]
+      },
+      {
+        "parameters": {
+          "resource": "text",
+          "operation": "message",
+          "model": "gpt-4-turbo",
+          "messages": {
+            "messageType": "multipleMessages",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are an expert social media content creator. Create engaging, platform-optimized content and return ONLY valid JSON."
+              },
+              {
+                "role": "user",
+                "content": "Create content for these platforms based on:\n\nTopic: {{ $json.topic }}\nKeywords: {{ $json.keywords }}\nTarget Audience: {{ $json.target_audience }}\nContent Type: {{ $json.content_type }}\nBrand Voice: {{ $json.brand_voice || 'professional yet engaging' }}\n\nGenerate content for:\n1. Instagram (max 2200 chars)\n2. Twitter/X (max 280 chars)\n3. LinkedIn (max 3000 chars)\n4. Facebook (max 63206 chars)\n5. TikTok (max 150 chars)\n6. YouTube Shorts (max 100 chars)\n7. Threads (max 500 chars)\n\nAlso provide:\n- 15-20 trending hashtags (array)\n- Optimal posting times for each platform (object)\n- 3 content variations for A/B testing (array)\n- 2 engagement tips (array)\n\nReturn as JSON with keys: instagram_content, twitter_content, linkedin_content, facebook_content, tiktok_content, youtube_content, threads_content, hashtags, optimal_times, content_variations, engagement_tips"
+              }
+            ]
+          },
+          "options": {
+            "temperature": 0.7,
+            "maxTokens": 2000
+          }
+        },
+        "id": "ai-content-generator",
+        "name": "AI Content Generator",
+        "type": "n8n-nodes-base.openAi",
+        "typeVersion": 1,
+        "position": [1340, 300],
+        "credentials": {
+          "openAiApi": {
+            "id": "openai-credentials",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "text",
+          "operation": "analyze",
+          "model": "gemini-1.5-pro",
+          "prompt": "Analyze this content and provide trending hashtags, optimal posting times, and engagement strategies:\n\nContent: {{ $json.instagram_content }}\nTarget Audience: {{ $json.target_audience }}\nIndustry: {{ $json.industry }}\n\nReturn JSON with:\n- trending_hashtags (array of 15-20 hashtags)\n- optimal_times (object with platform keys)\n- engagement_tips (array)\n- content_variations (array)"
+        },
+        "id": "content-optimizer",
+        "name": "Content Optimizer",
+        "type": "n8n-nodes-base.googleGemini",
+        "typeVersion": 1,
+        "position": [1560, 300],
+        "credentials": {
+          "googleGeminiApi": {
+            "id": "gemini-credentials",
+            "name": "Google Gemini API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Content aggregation and formatting\nconst input = $input.all();\nconst timestamp = new Date().toISOString();\n\n// Get the processed media data (contains webhook data too)\nconst mediaData = input.find(item => item.json?.timestamp) || {};\nconst mediaJson = mediaData.json || {};\n\n// Get AI generated content\nconst aiContent = input.find(item => item.json?.instagram_content)?.json || {};\n\n// Get optimization data\nconst optimizationData = input.find(item => item.json?.trending_hashtags)?.json || {};\n\n// Combine all data\nconst aggregatedContent = {\n  timestamp,\n  topic: mediaJson.topic || '',\n  target_audience: mediaJson.target_audience || '',\n  content_type: mediaJson.content_type || '',\n  brand_voice: mediaJson.brand_voice || 'professional yet engaging',\n  keywords: mediaJson.keywords || '',\n  industry: mediaJson.industry || '',\n  \n  // AI generated content\n  instagram_content: aiContent.instagram_content || '',\n  twitter_content: aiContent.twitter_content || '',\n  linkedin_content: aiContent.linkedin_content || '',\n  facebook_content: aiContent.facebook_content || '',\n  tiktok_content: aiContent.tiktok_content || '',\n  youtube_content: aiContent.youtube_content || '',\n  threads_content: aiContent.threads_content || '',\n  \n  // Media URLs\n  image_url: mediaJson.image_url || '',\n  video_url: mediaJson.video_url || '',\n  \n  // Optimization data\n  trending_hashtags: optimizationData.trending_hashtags || aiContent.hashtags || [],\n  optimal_times: optimizationData.optimal_times || aiContent.optimal_times || {},\n  optimization_tips: optimizationData.engagement_tips || aiContent.engagement_tips || [],\n  content_variations: optimizationData.content_variations || aiContent.content_variations || [],\n  \n  // Configuration\n  approval_email: mediaJson.approval_email || 'admin@yourdomain.com',\n  telegram_chat_id: mediaJson.telegram_chat_id || '',\n  facebook_page_id: mediaJson.facebook_page_id || '',\n  analytics_sheet_id: mediaJson.analytics_sheet_id || '',\n  schedule_time: mediaJson.schedule_time || '',\n  \n  // Status\n  status: 'generated',\n  engagement_prediction: 'medium',\n  approval_status: mediaJson.auto_approve === true ? 'APPROVED' : 'PENDING'\n};\n\nreturn aggregatedContent;"
+        },
+        "id": "content-aggregator",
+        "name": "Content Aggregator",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1780, 300]
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.approval_email }}",
+          "subject": "Social Media Content Approval Required",
+          "message": "=<h2>Social Media Content Review</h2>\n<p><strong>Topic:</strong> {{ $json.topic }}</p>\n<p><strong>Target Audience:</strong> {{ $json.target_audience }}</p>\n<p><strong>Content Type:</strong> {{ $json.content_type }}</p>\n\n<h3>Generated Content:</h3>\n<div style=\"background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 8px;\">\n  <h4>Instagram:</h4>\n  <p>{{ $json.instagram_content }}</p>\n  \n  <h4>Twitter/X:</h4>\n  <p>{{ $json.twitter_content }}</p>\n  \n  <h4>LinkedIn:</h4>\n  <p>{{ $json.linkedin_content }}</p>\n  \n  <h4>Facebook:</h4>\n  <p>{{ $json.facebook_content }}</p>\n</div>\n\n<h3>Media:</h3>\n<p>Image URL: {{ $json.image_url }}</p>\n<p>Video URL: {{ $json.video_url }}</p>\n\n<h3>Optimization Suggestions:</h3>\n<p>{{ $json.optimization_tips }}</p>\n\n<p><strong>Approve this content by replying with \"APPROVED\" or request changes.</strong></p>",
+          "options": {
+            "htmlEmail": true
+          }
+        },
+        "id": "approval-email",
+        "name": "Send Approval Email",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2,
+        "position": [2000, 200],
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "gmail-credentials",
+            "name": "Gmail OAuth2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "operation": "exists"
+            },
+            "conditions": [
+              {
+                "id": "approval-condition",
+                "leftValue": "={{ $json.approval_status }}",
+                "rightValue": "APPROVED",
+                "operation": "equal"
+              }
+            ],
+            "combineOperation": "any"
+          }
+        },
+        "id": "approval-switch",
+        "name": "Approval Decision",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 1,
+        "position": [2000, 300]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "operation": "exists"
+            },
+            "conditions": [
+              {
+                "id": "schedule-check",
+                "leftValue": "={{ $json.schedule_time }}",
+                "rightValue": "",
+                "operation": "isNotEmpty"
+              }
+            ],
+            "combineOperation": "any"
+          }
+        },
+        "id": "schedule-switch",
+        "name": "Schedule Check",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 1,
+        "position": [2220, 300]
+      },
+      {
+        "parameters": {
+          "unit": "seconds",
+          "amount": "={{ Math.max(0, Math.floor((new Date($json.schedule_time) - new Date()) / 1000)) }}"
+        },
+        "id": "schedule-wait",
+        "name": "Schedule Wait",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1,
+        "position": [2220, 200]
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "create",
+          "mediaType": "image",
+          "caption": "={{ $json.instagram_content }}",
+          "imageUrl": "={{ $json.image_url }}"
+        },
+        "id": "instagram-publisher",
+        "name": "Instagram Publisher",
+        "type": "n8n-nodes-base.instagram",
+        "typeVersion": 1,
+        "position": [2440, 200],
+        "credentials": {
+          "instagramOAuth2Api": {
+            "id": "instagram-credentials",
+            "name": "Instagram OAuth2 API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "tweet",
+          "operation": "create",
+          "text": "={{ $json.twitter_content }}",
+          "additionalFields": {
+            "attachments": "={{ $json.media_attachments }}"
+          }
+        },
+        "id": "twitter-publisher",
+        "name": "Twitter/X Publisher",
+        "type": "n8n-nodes-base.twitter",
+        "typeVersion": 2,
+        "position": [2440, 280],
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "twitter-credentials",
+            "name": "Twitter OAuth2 API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "post",
+          "operation": "create",
+          "text": "={{ $json.linkedin_content }}",
+          "additionalFields": {
+            "visibility": "PUBLIC"
+          }
+        },
+        "id": "linkedin-publisher",
+        "name": "LinkedIn Publisher",
+        "type": "n8n-nodes-base.linkedIn",
+        "typeVersion": 1,
+        "position": [2440, 360],
+        "credentials": {
+          "linkedInOAuth2Api": {
+            "id": "linkedin-credentials",
+            "name": "LinkedIn OAuth2 API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "post",
+          "operation": "create",
+          "pageId": "={{ $json.facebook_page_id }}",
+          "message": "={{ $json.facebook_content }}",
+          "additionalFields": {
+            "link": "={{ $json.link }}",
+            "attachedMedia": "={{ $json.media_urls }}"
+          }
+        },
+        "id": "facebook-publisher",
+        "name": "Facebook Publisher",
+        "type": "n8n-nodes-base.facebook",
+        "typeVersion": 1,
+        "position": [2440, 440],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "facebook-credentials",
+            "name": "Facebook Graph API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  ...$json,\n  platform: 'Instagram',\n  post_url: $json.permalink || '',\n  status: 'published',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "instagram-enricher",
+        "name": "Instagram Enricher",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2560, 200]
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  ...$json,\n  platform: 'Twitter',\n  post_url: $json.url || '',\n  status: 'published',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "twitter-enricher",
+        "name": "Twitter Enricher",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2560, 280]
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  ...$json,\n  platform: 'LinkedIn',\n  post_url: $json.url || '',\n  status: 'published',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "linkedin-enricher",
+        "name": "LinkedIn Enricher",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2560, 360]
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  ...$json,\n  platform: 'Facebook',\n  post_url: $json.permalink_url || '',\n  status: 'published',\n  timestamp: new Date().toISOString()\n};"
+        },
+        "id": "facebook-enricher",
+        "name": "Facebook Enricher",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2560, 440]
+      },
+      {
+        "parameters": {
+          "resource": "append",
+          "operation": "appendOrUpdate",
+          "documentId": "={{ $json.analytics_sheet_id }}",
+          "sheetName": "Analytics",
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.timestamp }}",
+              "Topic": "={{ $json.topic }}",
+              "Platform": "={{ $json.platform }}",
+              "Content Type": "={{ $json.content_type }}",
+              "Engagement Prediction": "={{ $json.engagement_prediction }}",
+              "Post URL": "={{ $json.post_url }}",
+              "Status": "={{ $json.status }}"
+            }
+          }
+        },
+        "id": "analytics-tracker",
+        "name": "Analytics Tracker",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4,
+        "position": [2660, 300],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "google-sheets-credentials",
+            "name": "Google Sheets OAuth2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $json.telegram_chat_id }}",
+          "text": "🎉 Social Media Content Published!\n\n📱 Platform: {{ $json.platform }}\n📝 Topic: {{ $json.topic }}\n🎯 Audience: {{ $json.target_audience }}\n📊 Status: {{ $json.status }}\n🔗 Link: {{ $json.post_url }}\n\n✅ Published at: {{ $json.timestamp }}",
+          "additionalFields": {
+            "parse_mode": "HTML"
+          }
+        },
+        "id": "telegram-notification",
+        "name": "Telegram Notification",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1,
+        "position": [2660, 200],
+        "credentials": {
+          "telegramApi": {
+            "id": "telegram-credentials",
+            "name": "Telegram API"
+          }
+        }
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "webhook-trigger": {
+        "main": [
+          [
+            {
+              "node": "serp-research",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "serp-research": {
+        "main": [
+          [
+            {
+              "node": "content-type-switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "content-type-switch": {
+        "main": [
+          [
+            {
+              "node": "stability-video-generator",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "dalle-image-generator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "dalle-image-generator": {
+        "main": [
+          [
+            {
+              "node": "image-processor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "stability-video-generator": {
+        "main": [
+          [
+            {
+              "node": "video-processor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "image-processor": {
+        "main": [
+          [
+            {
+              "node": "ai-content-generator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "video-processor": {
+        "main": [
+          [
+            {
+              "node": "ai-content-generator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ai-content-generator": {
+        "main": [
+          [
+            {
+              "node": "content-optimizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "content-optimizer": {
+        "main": [
+          [
+            {
+              "node": "content-aggregator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "content-aggregator": {
+        "main": [
+          [
+            {
+              "node": "approval-email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "approval-switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "approval-email": {
+        "main": [
+          []
+        ]
+      },
+      "approval-switch": {
+        "main": [
+          [
+            {
+              "node": "schedule-switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "schedule-switch": {
+        "main": [
+          [
+            {
+              "node": "schedule-wait",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "instagram-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "twitter-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "linkedin-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "facebook-publisher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "schedule-wait": {
+        "main": [
+          [
+            {
+              "node": "instagram-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "twitter-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "linkedin-publisher",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "facebook-publisher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "instagram-publisher": {
+        "main": [
+          [
+            {
+              "node": "instagram-enricher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "twitter-publisher": {
+        "main": [
+          [
+            {
+              "node": "twitter-enricher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "linkedin-publisher": {
+        "main": [
+          [
+            {
+              "node": "linkedin-enricher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "facebook-publisher": {
+        "main": [
+          [
+            {
+              "node": "facebook-enricher",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "instagram-enricher": {
+        "main": [
+          [
+            {
+              "node": "analytics-tracker",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "telegram-notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "twitter-enricher": {
+        "main": [
+          [
+            {
+              "node": "analytics-tracker",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "telegram-notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "linkedin-enricher": {
+        "main": [
+          [
+            {
+              "node": "analytics-tracker",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "telegram-notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "facebook-enricher": {
+        "main": [
+          [
+            {
+              "node": "analytics-tracker",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "telegram-notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [
+      {
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z",
+        "id": "social-media-automation",
+        "name": "Social Media Automation"
+      }
+    ],
+    "triggerCount": 1,
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "versionId": "4"
+  }

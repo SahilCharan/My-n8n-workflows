@@ -1,0 +1,816 @@
+{
+  "name": "Clothing Brand Automation - Fabric to Social Media",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8,11,14,17,20 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Cron Trigger - 5x Daily",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "list",
+        "folderId": {
+          "__rl": true,
+          "value": "1234567890abcdef_PENDING_FOLDER_ID",
+          "mode": "id"
+        },
+        "queryParameters": {
+          "q": "mimeType contains 'image/' and trashed = false"
+        },
+        "limit": 1
+      },
+      "name": "Check for New Fabric Images",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1d4e5f6-7890-1234-5678-9abcdef01234",
+              "leftValue": "={{ $json.files.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Check if Images Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "download",
+        "fileId": "={{ $json.files[0].id }}"
+      },
+      "name": "Download Fabric Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+              "name": "fabricImage",
+              "value": "={{ $binary.data }}",
+              "type": "object"
+            },
+            {
+              "id": "b2c3d4e5-f6g7-8901-2345-6789abcdef01",
+              "name": "categories",
+              "value": "=[\n  {\n    \"section\": \"Men\",\n    \"garments\": [\"Shirt\", \"T-Shirt\", \"Pants\", \"Kurta\", \"Jacket\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Ethnic\", \"Western\"]\n  },\n  {\n    \"section\": \"Women\",\n    \"garments\": [\"Dress\", \"Blouse\", \"Saree\", \"Kurti\", \"Skirt\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Ethnic\", \"Party Wear\"]\n  },\n  {\n    \"section\": \"Kids\",\n    \"garments\": [\"T-Shirt\", \"Dress\", \"Shorts\", \"School Uniform\"],\n    \"styles\": [\"Casual\", \"Formal\", \"Playful\", \"School\"]\n  }\n]",
+              "type": "array"
+            },
+            {
+              "id": "c3d4e5f6-g7h8-9012-3456-789abcdef012",
+              "name": "originalFileName",
+              "value": "={{ $('Download Fabric Image').first().json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Clothing Categories",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Split Into Categories",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d4e5f6g7-h8i9-0123-4567-89abcdef0123",
+              "name": "currentSection",
+              "value": "={{ $json.categories[$('Split Into Categories').itemIndex] }}",
+              "type": "object"
+            },
+            {
+              "id": "e5f6g7h8-i9j0-1234-5678-9abcdef01234",
+              "name": "selectedGarment",
+              "value": "={{ $json.categories[$('Split Into Categories').itemIndex].garments[Math.floor(Math.random() * $json.categories[$('Split Into Categories').itemIndex].garments.length)] }}",
+              "type": "string"
+            },
+            {
+              "id": "f6g7h8i9-j0k1-2345-6789-abcdef012345",
+              "name": "selectedStyle",
+              "value": "={{ $json.categories[$('Split Into Categories').itemIndex].styles[Math.floor(Math.random() * $json.categories[$('Split Into Categories').itemIndex].styles.length)] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Select Random Garment & Style",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "=Create a high-quality, professional product photo of a {{ $json.currentSection.section.toLowerCase() }}'s {{ $json.selectedGarment }} made from this fabric pattern. The garment should be {{ $json.selectedStyle }} style, displayed on a clean white background, studio lighting, professional fashion photography, 4K quality, suitable for e-commerce. The fabric pattern should be clearly visible and well-integrated into the garment design. Indian fashion brand style.",
+        "options": {
+          "size": "1024x1024",
+          "quality": "standard"
+        }
+      },
+      "name": "Generate Clothing Image",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        1780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "messages": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a social media expert for fashion brands. Create engaging captions with relevant hashtags for Indian clothing brands."
+            },
+            {
+              "role": "user",
+              "content": "=Create platform-specific captions for this {{ $json.currentSection.section }}'s {{ $json.selectedGarment }} in {{ $json.selectedStyle }} style:\n\n1) Instagram caption (engaging, with emojis and hashtags, max 150 words)\n2) Facebook caption (more descriptive, storytelling, max 200 words)  \n3) YouTube description (detailed, SEO-optimized, max 300 words)\n\nTarget audience: Fashion-conscious {{ $json.currentSection.section.toLowerCase() }} aged 18-45 in India. Include relevant hashtags for each platform. Make it trendy and appealing."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.8
+        }
+      },
+      "name": "Generate Captions",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        2000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "messages": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a creative content creator for fashion reels. Generate trending reel concepts."
+            },
+            {
+              "role": "user",
+              "content": "=Create a trending Instagram Reel concept for {{ $json.currentSection.section }}'s {{ $json.selectedGarment }} in {{ $json.selectedStyle }} style. Include:\n1) Hook (first 3 seconds)\n2) Styling tips (3-4 quick tips)\n3) Trending music suggestions\n4) Call-to-action\n5) Best posting times\n\nMake it engaging, shareable, and suitable for Indian fashion audience."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.9
+        }
+      },
+      "name": "Generate Reel Concept",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        2220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "g7h8i9j0-k1l2-3456-7890-bcdef0123456",
+              "name": "generatedImageUrl",
+              "value": "={{ $('Generate Clothing Image').first().json.data[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "h8i9j0k1-l2m3-4567-8901-cdef01234567",
+              "name": "captions",
+              "value": "={{ $('Generate Captions').first().json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "i9j0k1l2-m3n4-5678-9012-def012345678",
+              "name": "reelConcept",
+              "value": "={{ $('Generate Reel Concept').first().json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "j0k1l2m3-n4o5-6789-0123-ef0123456789",
+              "name": "fileName",
+              "value": "={{ $json.currentSection.section }}_{{ $json.selectedGarment.replace(/\\s+/g, '_') }}_{{ new Date().toISOString().slice(0,10) }}_{{ Math.random().toString(36).substr(2, 9) }}",
+              "type": "string"
+            },
+            {
+              "id": "k1l2m3n4-o5p6-7890-1234-f01234567890",
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Parse AI Responses",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "upload",
+        "name": "={{ $json.fileName }}.jpg",
+        "parents": {
+          "__rl": true,
+          "value": "1234567890abcdef_GENERATED_FOLDER_ID",
+          "mode": "id"
+        },
+        "options": {
+          "useFilename": false
+        }
+      },
+      "name": "Save Generated Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": "Content_Log",
+        "columnRow": "A1:I1",
+        "dataMode": "define",
+        "valueInputMode": "define",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "column": "Section",
+              "value": "={{ $json.currentSection.section }}"
+            },
+            {
+              "column": "Garment",
+              "value": "={{ $json.selectedGarment }}"
+            },
+            {
+              "column": "Style", 
+              "value": "={{ $json.selectedStyle }}"
+            },
+            {
+              "column": "File_Name",
+              "value": "={{ $json.fileName }}"
+            },
+            {
+              "column": "Image_URL",
+              "value": "={{ $json.generatedImageUrl }}"
+            },
+            {
+              "column": "Status",
+              "value": "Generated"
+            },
+            {
+              "column": "Instagram_Caption",
+              "value": "={{ $json.captions.split('Instagram')[1] ? $json.captions.split('Instagram')[1].split('Facebook')[0].trim() : 'Caption generated' }}"
+            },
+            {
+              "column": "Reel_Concept",
+              "value": "={{ $json.reelConcept.substring(0, 500) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "seconds",
+        "amount": 10
+      },
+      "name": "Wait - Rate Limiting",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v18.0/YOUR_INSTAGRAM_ACCOUNT_ID/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_INSTAGRAM_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.generatedImageUrl }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.captions.split('Instagram')[1] ? $json.captions.split('Instagram')[1].split('Facebook')[0].trim() : 'New arrival! Check out our latest collection. #fashion #clothing #style' }}"
+            },
+            {
+              "name": "access_token",
+              "value": "YOUR_INSTAGRAM_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Instagram - Create Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3320,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST", 
+        "url": "=https://graph.instagram.com/v18.0/YOUR_INSTAGRAM_ACCOUNT_ID/media_publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization", 
+              "value": "Bearer YOUR_INSTAGRAM_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $('Instagram - Create Media').first().json.id }}"
+            },
+            {
+              "name": "access_token",
+              "value": "YOUR_INSTAGRAM_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Instagram - Publish Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3540,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/YOUR_FACEBOOK_PAGE_ID/posts",
+        "authentication": "genericCredentialType", 
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_FACEBOOK_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.captions.split('Facebook')[1] ? $json.captions.split('Facebook')[1].split('YouTube')[0].trim() : 'Check out our latest fashion collection! Made with premium fabrics and contemporary designs.' }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $json.generatedImageUrl }}"
+            },
+            {
+              "name": "access_token",
+              "value": "YOUR_FACEBOOK_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Facebook - Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3320,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "move",
+        "fileId": "={{ $('Download Fabric Image').first().json.files[0].id }}",
+        "parents": {
+          "__rl": true,
+          "value": "1234567890abcdef_PROCESSED_FOLDER_ID",
+          "mode": "id"
+        }
+      },
+      "name": "Move Processed Fabric",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_ID",
+          "mode": "id"
+        },
+        "sheetName": "Content_Log",
+        "options": {
+          "useAppend": false
+        },
+        "columnToMatchOn": "File_Name",
+        "valueToMatchOn": "={{ $json.fileName }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "Status",
+              "value": "Published"
+            },
+            {
+              "column": "Published_At",
+              "value": "={{ new Date().toISOString() }}"
+            },
+            {
+              "column": "Instagram_ID",
+              "value": "={{ $('Instagram - Publish Media').first().json.id || 'Failed' }}"
+            },
+            {
+              "column": "Facebook_ID", 
+              "value": "={{ $('Facebook - Create Post').first().json.id || 'Failed' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Status - Published",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "✅ **Clothing Brand Automation - Success!**\n\n📊 **Content Generated:**\n- Section: {{ $json.currentSection.section }}\n- Garment: {{ $json.selectedGarment }}\n- Style: {{ $json.selectedStyle }}\n- File: {{ $json.fileName }}\n\n🚀 **Published To:**\n- ✅ Instagram: {{ $('Instagram - Publish Media').first().json.id ? 'Success' : 'Failed' }}\n- ✅ Facebook: {{ $('Facebook - Create Post').first().json.id ? 'Success' : 'Failed' }}\n\n⏰ **Next Run:** {{ new Date(Date.now() + 3*60*60*1000).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) }} IST\n\n🎯 **Stats Today:** {{ $runIndex + 1 }} content pieces generated",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "additionalFields": {}
+      },
+      "name": "Success Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4200,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Cron Trigger - 5x Daily": {
+      "main": [
+        [
+          {
+            "node": "Check for New Fabric Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for New Fabric Images": {
+      "main": [
+        [
+          {
+            "node": "Check if Images Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Images Found": {
+      "main": [
+        [
+          {
+            "node": "Download Fabric Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Download Fabric Image": {
+      "main": [
+        [
+          {
+            "node": "Set Clothing Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Clothing Categories": {
+      "main": [
+        [
+          {
+            "node": "Split Into Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Into Categories": {
+      "main": [
+        [
+          {
+            "node": "Select Random Garment & Style",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Random Garment & Style": {
+      "main": [
+        [
+          {
+            "node": "Generate Clothing Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Clothing Image": {
+      "main": [
+        [
+          {
+            "node": "Generate Captions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Captions": {
+      "main": [
+        [
+          {
+            "node": "Generate Reel Concept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Reel Concept": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Responses": {
+      "main": [
+        [
+          {
+            "node": "Save Generated Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Generated Image": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Wait - Rate Limiting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - Rate Limiting": {
+      "main": [
+        [
+          {
+            "node": "Instagram - Create Media",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Facebook - Create Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram - Create Media": {
+      "main": [
+        [
+          {
+            "node": "Instagram - Publish Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram - Publish Media": {
+      "main": [
+        [
+          {
+            "node": "Move Processed Fabric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook - Create Post": {
+      "main": [
+        [
+          {
+            "node": "Move Processed Fabric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Processed Fabric": {
+      "main": [
+        [
+          {
+            "node": "Update Status - Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Published": {
+      "main": [
+        [
+          {
+            "node": "Success Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-02T10:00:00.000Z",
+      "updatedAt": "2025-01-02T10:00:00.000Z",
+      "id": "clothing-automation",
+      "name": "Clothing Automation"
+    }
+  ]
+}
