@@ -1,0 +1,43 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudconvert.com/v2/convert",
+        "authentication": "headerAuth",
+        "sendBody": true,
+        "contentType": "multipart/form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formData",
+              "name": "tasks",
+              "value": "={{JSON.stringify({\"import-file\":{\"operation\":\"import/upload\"},\"convert-file\":{\"operation\":\"convert\",\"input\":\"import-file\",\"output_format\":\"pdf\",\"engine\":\"libreoffice\"},\"export-file\":{\"operation\":\"export/url\",\"input\":\"convert-file\",\"inline\":false}})}}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "name": "CloudConvert HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2112,
+        -272
+      ],
+      "credentials": {
+        "headerAuth": {
+          "id": "YOUR_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "CloudConvert Header Auth"
+        }
+      }
+    }
+  ],
+  "connections": {}
+}

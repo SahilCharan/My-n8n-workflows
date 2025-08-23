@@ -1,0 +1,351 @@
+{
+  "name": "My workflow 16",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -32
+      ],
+      "id": "f945cbe4-4341-41dc-a743-6d396d5091ac",
+      "name": "Google Sheets Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "b02524dc-c1ca-4ee4-ba27-7280e693c242",
+      "name": "Code+validation"
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "email": "sahilcharandwary@gmail.com",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.clearbit",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -32
+      ],
+      "id": "db82ebec-5751-4b6f-9250-6091ad15fbc3",
+      "name": "Enrich a person+company"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -32
+      ],
+      "id": "eed56a23-5d37-491d-8b2e-323afc5ccef4",
+      "name": "Qualification Logic"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -304,
+        160
+      ],
+      "id": "63661933-4c4c-49bc-8a45-3e22576da6d4",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gTkP0GLHEW9Zy2Pg",
+          "name": "Sahil Google Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "9c0ae1a9-bc20-4036-a0c5-7c9599e7bd5c",
+      "name": "instantly api"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        416,
+        192
+      ],
+      "id": "8d58b120-c761-4ac4-9c06-f5925a9ff898",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gTkP0GLHEW9Zy2Pg",
+          "name": "Sahil Google Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9dbf2e4b-d13a-438b-a33f-ec97bd1eb02b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bf0f13cf-f5df-4851-80bb-58f340fc3408",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        112,
+        192
+      ],
+      "id": "44c2f0af-76e4-4c4b-9e72-c4821ae11bdf",
+      "name": "validate Switch1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cdb9a87d-b4df-46ae-a68e-692a5e1dec06"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        528,
+        -32
+      ],
+      "id": "8f57150b-5df2-4251-9edf-47fe889cea2f",
+      "name": "error Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enrich a person+company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code+validation": {
+      "main": [
+        [
+          {
+            "node": "Qualification Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich a person+company": {
+      "main": [
+        [
+          {
+            "node": "Code+validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Logic": {
+      "main": [
+        [
+          {
+            "node": "error Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "instantly api",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instantly api": {
+      "main": [
+        [
+          {
+            "node": "validate Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate Switch1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "error Switch": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27344b50b8f0df78999cf11dab38bfd8f18f4d025f4e70dc31e8b6299e3e4a17"
+  },
+  "tags": []
+}

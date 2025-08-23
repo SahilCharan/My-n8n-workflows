@@ -1,0 +1,661 @@
+{
+  name Sales Automation - Lead Enrichment & Qualification,
+  nodes [
+    {
+      parameters {
+        authentication oAuth2,
+        select sheet,
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID,
+          mode list
+        },
+        simple false,
+        columns {
+          mappingMode defineBelow,
+          value {
+            Name Name,
+            Company Company, 
+            Email Email,
+            Job Title Job Title,
+            Country Country,
+            LinkedIn URL LinkedIn URL,
+            Lead Status Lead Status,
+            Email Status Email Status,
+            Last Updated Last Updated
+          }
+        },
+        options {
+          useAppend true
+        }
+      },
+      id google-sheets-trigger,
+      name Google Sheets Trigger,
+      type n8n-nodes-base.googleSheets,
+      typeVersion 4,
+      position [200, 300],
+      webhookId lead-automation-webhook
+    },
+    {
+      parameters {
+        conditions {
+          options {
+            caseSensitive true,
+            leftValue ,
+            operation isEmpty
+          },
+          conditions [
+            {
+              leftValue ={{ $json.Email }},
+              operation isEmpty
+            },
+            {
+              leftValue ={{ $json.Company }},
+              operation isEmpty
+            },
+            {
+              leftValue ={{ $json['Job Title'] }},
+              operation isEmpty
+            }
+          ],
+          combineOperation any
+        }
+      },
+      id check-missing-data,
+      name Check Missing Data,
+      type n8n-nodes-base.if,
+      typeVersion 2,
+      position [400, 300]
+    },
+    {
+      parameters {
+        jsCode  Wait 2 seconds to respect rate limitsnawait new Promise(resolve = setTimeout(resolve, 2000));nnfor (const item of $input.all()) {n   Skip if already enriched recentlyn  if (item.json['Last Updated']) {n    const lastUpdate = new Date(item.json['Last Updated']);n    const now = new Date();n    const hoursDiff = (now - lastUpdate)  (1000  60  60);n    if (hoursDiff  24) {n      continue;n    }n  }n  n  item.json.needsEnrichment = true;n}nnreturn $input.all();
+      },
+      id rate-limit-check,
+      name Rate Limit & Freshness Check,
+      type n8n-nodes-base.code,
+      typeVersion 2,
+      position [600, 200]
+    },
+    {
+      parameters {
+        method GET,
+        url httpsperson.clearbit.comv2combinedfind,
+        authentication predefinedCredentialType,
+        nodeCredentialType clearbitApi,
+        qs {
+          email ={{ $json.Email  '' }},
+          given_name ={{ $json.Name  $json.Name.split(' ')[0]  '' }},
+          family_name ={{ $json.Name  $json.Name.split(' ').slice(1).join(' ')  '' }},
+          company ={{ $json.Company  '' }}
+        },
+        options {
+          timeout 10000,
+          retry {
+            enabled true,
+            maxTries 3,
+            waitBetween 1000
+          }
+        }
+      },
+      id clearbit-enrichment,
+      name Clearbit Enrichment,
+      type n8n-nodes-base.httpRequest,
+      typeVersion 4.2,
+      position [800, 200],
+      continueOnFail true
+    },
+    {
+      parameters {
+        method GET,
+        url httpsapi.hunter.iov2email-finder,
+        authentication predefinedCredentialType, 
+        nodeCredentialType hunterApi,
+        qs {
+          domain ={{ $json.Company  $json.Company.toLowerCase().replace([^a-z0-9]g, '') + '.com'  '' }},
+          first_name ={{ $json.Name  $json.Name.split(' ')[0]  '' }},
+          last_name ={{ $json.Name  $json.Name.split(' ').slice(1).join(' ')  '' }}
+        },
+        options {
+          timeout 10000
+        }
+      },
+      id hunter-email-finder,
+      name Hunter.io Email Finder,
+      type n8n-nodes-base.httpRequest,
+      typeVersion 4.2,
+      position [800, 350],
+      continueOnFail true
+    },
+    {
+      parameters {
+        jsCode  Process and merge enrichment datanfor (const item of $input.all()) {n  let enrichedData = {n    Name item.json.Name  '',n    Company item.json.Company  '',n    Email item.json.Email  '',n    'Job Title' item.json['Job Title']  '',n    Country item.json.Country  '',n    'LinkedIn URL' item.json['LinkedIn URL']  '',n    'Lead Status' '',n    'Email Status' '',n    'Last Updated' new Date().toISOString()n  };n  n   Process Clearbit data if availablen  if (item.json.person && !item.json.error) {n    enrichedData.Email = enrichedData.Email  item.json.person.email  '';n    enrichedData['Job Title'] = enrichedData['Job Title']  item.json.person.employment.title  '';n    enrichedData.Company = enrichedData.Company  item.json.person.employment.name  '';n    enrichedData['LinkedIn URL'] = enrichedData['LinkedIn URL']  item.json.person.linkedin.handle  `httpslinkedin.comin${item.json.person.linkedin.handle}`  '';n  }n  n   Process Hunter.io data if availablen  if (item.json.data && item.json.data.email && !enrichedData.Email) {n    if (item.json.data.confidence  70) {n      enrichedData.Email = item.json.data.email;n    }n  }n  n   Mark data completenessn  const completeness = [n    enrichedData.Email  1  0,n    enrichedData.Company  1  0,n    enrichedData['Job Title']  1  0n  ].reduce((a, b) = a + b, 0);n  n  enrichedData.dataCompleteness = `${Math.round(completeness3100)}%`;n  n  item.json = enrichedData;n}nnreturn $input.all();
+      },
+      id process-enrichment,
+      name Process Enrichment Data,
+      type n8n-nodes-base.code,
+      typeVersion 2,
+      position [1000, 275]
+    },
+    {
+      parameters {
+        jsCode  Lead qualification logicnfor (const item of $input.all()) {n  const jobTitle = (item.json['Job Title']  '').toLowerCase();n  const country = item.json.Country  '';n  n   Qualifying job titlesn  const qualifyingTitles = ['founder', 'ceo', 'head of sales', 'chief executive', 'co-founder'];n  const qualifyingCountries = ['USA', 'UK', 'Canada', 'United States', 'United Kingdom'];n  n   Check if job title contains any qualifying termsn  const hasQualifyingTitle = qualifyingTitles.some(title = n    jobTitle.includes(title)n  );n  n   Check if country matchesn  const hasQualifyingCountry = qualifyingCountries.some(c = n    country.toLowerCase().includes(c.toLowerCase())n  );n  n   Final qualification decisionn  const isQualified = hasQualifyingTitle && hasQualifyingCountry && item.json.Email;n  n  item.json['Lead Status'] = isQualified  'Qualified'  'Not Qualified';n  item.json.qualified = isQualified;n  item.json.qualificationReason = [];n  n  if (!hasQualifyingTitle) item.json.qualificationReason.push('Job title not qualifying');n  if (!hasQualifyingCountry) item.json.qualificationReason.push('Country not qualifying');n  if (!item.json.Email) item.json.qualificationReason.push('Missing email');n  n  item.json.qualificationReason = item.json.qualificationReason.join(', ')  'All criteria met';n}nnreturn $input.all();
+      },
+      id qualification-logic,
+      name Lead Qualification Logic,
+      type n8n-nodes-base.code,
+      typeVersion 2,
+      position [1200, 275]
+    },
+    {
+      parameters {
+        conditions {
+          options {
+            caseSensitive true
+          },
+          conditions [
+            {
+              leftValue ={{ $json.qualified }},
+              operation equal,
+              rightValue true
+            }
+          ]
+        }
+      },
+      id qualification-switch,
+      name Qualification Switch,
+      type n8n-nodes-base.if,
+      typeVersion 2,
+      position [1400, 275]
+    },
+    {
+      parameters {
+        jsCode  Format data for Instantly APInfor (const item of $input.all()) {n  const nameParts = (item.json.Name  '').trim().split(' ');n  const firstName = nameParts[0]  '';n  const lastName = nameParts.slice(1).join(' ')  '';n  n  item.json.instantlyPayload = {n    email item.json.Email,n    first_name firstName,n    last_name lastName,n    company_name item.json.Company,n    job_title item.json['Job Title'],n    country item.json.Country,n    linkedin_url item.json['LinkedIn URL'],n    custom_variables {n      full_name item.json.Name,n      source 'Google Sheets Automation',n      qualification_date new Date().toISOString(),n      lead_score 'High'n    }n  };n}nnreturn $input.all();
+      },
+      id format-for-instantly,
+      name Format for Instantly,
+      type n8n-nodes-base.code,
+      typeVersion 2,
+      position [1600, 200]
+    },
+    {
+      parameters {
+        method POST,
+        url httpsapi.instantly.aiapiv1leadadd,
+        authentication predefinedCredentialType,
+        nodeCredentialType instantlyApi,
+        sendHeaders true,
+        headerParameters {
+          parameters [
+            {
+              name Content-Type,
+              value applicationjson
+            },
+            {
+              name Authorization,
+              value Bearer YOUR_INSTANTLY_API_KEY
+            }
+          ]
+        },
+        sendBody true,
+        bodyParameters {
+          parameters [
+            {
+              name campaign_id,
+              value YOUR_CAMPAIGN_ID
+            },
+            {
+              name email,
+              value ={{ $json.instantlyPayload.email }}
+            },
+            {
+              name first_name, 
+              value ={{ $json.instantlyPayload.first_name }}
+            },
+            {
+              name last_name,
+              value ={{ $json.instantlyPayload.last_name }}
+            },
+            {
+              name company_name,
+              value ={{ $json.instantlyPayload.company_name }}
+            },
+            {
+              name custom_variables,
+              value ={{ JSON.stringify($json.instantlyPayload.custom_variables) }}
+            }
+          ]
+        },
+        options {
+          timeout 10000,
+          retry {
+            enabled true,
+            maxTries 3,
+            waitBetween 2000
+          }
+        }
+      },
+      id instantly-api-call,
+      name Add Lead to Instantly,
+      type n8n-nodes-base.httpRequest,
+      typeVersion 4.2,
+      position [1800, 200],
+      continueOnFail true
+    },
+    {
+      parameters {
+        conditions {
+          options {
+            caseSensitive true
+          },
+          conditions [
+            {
+              leftValue ={{ $json.success }},
+              operation equal, 
+              rightValue true
+            }
+          ]
+        }
+      },
+      id instantly-success-check,
+      name Instantly Success Check,
+      type n8n-nodes-base.if,
+      typeVersion 2,
+      position [2000, 200]
+    },
+    {
+      parameters {
+        authentication oAuth2,
+        operation update,
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID,
+          mode list
+        },
+        columns {
+          mappingMode defineBelow,
+          value {
+            Email Status Queued,
+            Last Updated ={{ new Date().toISOString() }},
+            Campaign Added ={{ new Date().toLocaleDateString() }}
+          }
+        },
+        options {
+          upsert false
+        }
+      },
+      id update-success-status,
+      name Update Success Status,
+      type n8n-nodes-base.googleSheets,
+      typeVersion 4,
+      position [2200, 150]
+    },
+    {
+      parameters {
+        authentication oAuth2,
+        operation update,
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID, 
+          mode list
+        },
+        columns {
+          mappingMode defineBelow,
+          value {
+            Email Status Failed - {{ $json.error.message  'API Error' }},
+            Last Updated ={{ new Date().toISOString() }}
+          }
+        }
+      },
+      id update-error-status,
+      name Update Error Status, 
+      type n8n-nodes-base.googleSheets,
+      typeVersion 4,
+      position [2200, 250]
+    },
+    {
+      parameters {
+        authentication oAuth2,
+        operation update,
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID,
+          mode list
+        },
+        columns {
+          mappingMode defineBelow,
+          value {
+            Email ={{ $json.Email }},
+            Company ={{ $json.Company }},
+            Job Title ={{ $json['Job Title'] }},
+            Lead Status ={{ $json['Lead Status'] }},
+            Last Updated ={{ $json['Last Updated'] }},
+            Data Completeness ={{ $json.dataCompleteness }}
+          }
+        }
+      },
+      id update-enriched-data,
+      name Update Enriched Data,
+      type n8n-nodes-base.googleSheets, 
+      typeVersion 4,
+      position [1200, 400]
+    },
+    {
+      parameters {
+        authentication oAuth2,
+        operation update, 
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID,
+          mode list
+        },
+        columns {
+          mappingMode defineBelow,
+          value {
+            Lead Status Not Qualified,
+            Email Status Not Processed,
+            Last Updated ={{ new Date().toISOString() }},
+            Qualification Reason ={{ $json.qualificationReason }}
+          }
+        }
+      },
+      id update-unqualified,
+      name Update Unqualified Status,
+      type n8n-nodes-base.googleSheets,
+      typeVersion 4,
+      position [1600, 350]
+    },
+    {
+      parameters {
+        channel #sales-automation,
+        text 🎯 New Qualified Lead Alert!nnName {{ $json.Name }}nCompany {{ $json.Company }}nJob Title {{ $json['Job Title'] }}nEmail {{ $json.Email }}nCountry {{ $json.Country }}nn✅ Added to Instantly campaign successfully!,
+        authentication oAuth2
+      },
+      id slack-notification,
+      name Slack Notification,
+      type n8n-nodes-base.slack,
+      typeVersion 2.1,
+      position [2200, 50]
+    },
+    {
+      parameters {
+        content 📈 Sales Automation ReportnnQualified Lead Addedn• Name {{ $json.Name }}n• Company {{ $json.Company }}n• Email {{ $json.Email }}n• Status Successfully queued in campaignnnNext Stepsn• Email sequence will begin automaticallyn• Monitor reply rates in Instantly dashboardn• Update CRM with engagement data,
+        chatId YOUR_TELEGRAM_CHAT_ID,
+        authentication predefinedCredentialType,
+        nodeCredentialType telegramApi
+      },
+      id telegram-notification,
+      name Telegram Report,
+      type n8n-nodes-base.telegram,
+      typeVersion 1.2,
+      position [2400, 150]
+    },
+    {
+      parameters {
+        jsCode  Error logging and analyticsnconst errors = $input.all().filter(item = item.json.error);nconst successes = $input.all().filter(item = !item.json.error);nnconst report = {n  timestamp new Date().toISOString(),n  totalProcessed $input.all().length,n  successful successes.length,n  failed errors.length,n  successRate `${Math.round(successes.length  $input.all().length  100)}%`,n  errors errors.map(item = ({n    name item.json.Name,n    error item.json.error.message  'Unknown error'n  }))n};nnconsole.log('Workflow Execution Report', JSON.stringify(report, null, 2));nnreturn [{ json report }];
+      },
+      id error-analytics,
+      name Error Analytics & Logging,
+      type n8n-nodes-base.code,
+      typeVersion 2,
+      position [2000, 400]
+    },
+    {
+      parameters {
+        rule {
+          interval [
+            {
+              field cronExpression,
+              expression 15    
+            }
+          ]
+        }
+      },
+      id schedule-trigger,
+      name Schedule Trigger (Every 15 min),
+      type n8n-nodes-base.scheduleTrigger,
+      typeVersion 1.2,
+      position [200, 450]
+    },
+    {
+      parameters {
+        authentication oAuth2,
+        operation read,
+        sheetId {
+          __rl true,
+          value YOUR_GOOGLE_SHEET_ID,
+          mode list
+        },
+        filters {
+          conditions [
+            {
+              column Lead Status,
+              condition empty
+            }
+          ]
+        }
+      },
+      id read-unprocessed-leads,
+      name Read Unprocessed Leads,
+      type n8n-nodes-base.googleSheets,
+      typeVersion 4,
+      position [400, 450]
+    }
+  ],
+  connections {
+    google-sheets-trigger {
+      main [
+        [
+          {
+            node check-missing-data,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    check-missing-data {
+      main [
+        [
+          {
+            node rate-limit-check,
+            type main,
+            index 0
+          }
+        ],
+        [
+          {
+            node qualification-logic,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    rate-limit-check {
+      main [
+        [
+          {
+            node clearbit-enrichment,
+            type main,
+            index 0
+          },
+          {
+            node hunter-email-finder, 
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    clearbit-enrichment {
+      main [
+        [
+          {
+            node process-enrichment,
+            type main, 
+            index 0
+          }
+        ]
+      ]
+    },
+    hunter-email-finder {
+      main [
+        [
+          {
+            node process-enrichment,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    process-enrichment {
+      main [
+        [
+          {
+            node qualification-logic,
+            type main,
+            index 0
+          },
+          {
+            node update-enriched-data,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    qualification-logic {
+      main [
+        [
+          {
+            node qualification-switch,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    qualification-switch {
+      main [
+        [
+          {
+            node format-for-instantly,
+            type main,
+            index 0
+          }
+        ],
+        [
+          {
+            node update-unqualified,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    format-for-instantly {
+      main [
+        [
+          {
+            node instantly-api-call,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    instantly-api-call {
+      main [
+        [
+          {
+            node instantly-success-check,
+            type main, 
+            index 0
+          }
+        ]
+      ]
+    },
+    instantly-success-check {
+      main [
+        [
+          {
+            node update-success-status,
+            type main,
+            index 0
+          },
+          {
+            node slack-notification,
+            type main,
+            index 0
+          }
+        ],
+        [
+          {
+            node update-error-status,
+            type main,
+            index 0
+          },
+          {
+            node error-analytics,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    update-success-status {
+      main [
+        [
+          {
+            node telegram-notification,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    schedule-trigger {
+      main [
+        [
+          {
+            node read-unprocessed-leads,
+            type main,
+            index 0
+          }
+        ]
+      ]
+    },
+    read-unprocessed-leads {
+      main [
+        [
+          {
+            node check-missing-data,
+            type main, 
+            index 0
+          }
+        ]
+      ]
+    }
+  },
+  pinData {},
+  settings {
+    executionOrder v1,
+    saveManualExecutions true,
+    callerPolicy workflowsFromSameOwner,
+    errorWorkflow error-handler-workflow-id
+  },
+  staticData {},
+  tags [
+    {
+      createdAt 2024-01-15T100000.000Z,
+      updatedAt 2024-01-15T100000.000Z, 
+      id sales-automation,
+      name Sales Automation
+    }
+  ],
+  triggerCount 0,
+  updatedAt 2024-01-15T100000.000Z,
+  versionId 1
+}

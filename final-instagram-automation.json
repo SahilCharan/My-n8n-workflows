@@ -1,0 +1,573 @@
+{
+  "name": "Instagram Content Intelligence + Multi-Platform Automation v2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Workflow Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [40, 300]
+    },
+    {
+      "parameters": {
+        "command": "python3 /home/n8n/automation/business_page_automation.py"
+      },
+      "id": "execute-scraper",
+      "name": "Run Python Scraper",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "filePath": "/home/n8n/automation/output/n8n_webhook_data.json"
+      },
+      "id": "read-scraper-output",
+      "name": "Read Scraper Output",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Instaloader Content Processing Node\n// Processes scraped Instagram data from the JSON file\n\nconst webhookData = $input.first().json;\nconst posts = webhookData.posts || [];\n\n// Sort posts by engagement (likes + comments)\nconst sortedPosts = posts.sort((a, b) => {\n  const engagementA = (a.likes || 0) + (a.comments || 0);\n  const engagementB = (b.likes || 0) + (b.comments || 0);\n  return engagementB - engagementA;\n});\n\n// Select top performing posts for analysis\nconst topPosts = sortedPosts.slice(0, 5);\n\n// Extract content patterns\nconst contentAnalysis = {\n  totalPosts: posts.length,\n  averageEngagement: posts.reduce((sum, post) => sum + (post.likes + post.comments), 0) / posts.length,\n  topHashtags: extractTopHashtags(posts),\n  bestPerformingPost: topPosts[0],\n  contentPatterns: analyzeContentPatterns(topPosts),\n  postingTimes: posts.map(post => new Date(post.date).getHours()),\n  selectedPosts: topPosts\n};\n\nfunction extractTopHashtags(posts) {\n  const hashtagCount = {};\n  posts.forEach(post => {\n    if (post.hashtags) {\n      post.hashtags.forEach(tag => {\n        hashtagCount[tag] = (hashtagCount[tag] || 0) + 1;\n      });\n    }\n  });\n  \n  return Object.entries(hashtagCount)\n    .sort(([,a], [,b]) => b - a)\n    .slice(0, 10)\n    .map(([tag]) => tag);\n}\n\nfunction analyzeContentPatterns(posts) {\n  const patterns = {\n    averageCaptionLength: 0,\n    commonWords: {},\n    emotionTone: 'neutral',\n    hasCallToAction: false\n  };\n  \n  let totalLength = 0;\n  posts.forEach(post => {\n    if (post.caption) {\n      totalLength += post.caption.length;\n      const words = post.caption.toLowerCase().match(/\\b\\w+\\b/g) || [];\n      words.forEach(word => {\n        if (word.length > 3) {\n          patterns.commonWords[word] = (patterns.commonWords[word] || 0) + 1;\n        }\n      });\n      if (post.caption.includes('shop') || post.caption.includes('buy') || post.caption.includes('link')) {\n        patterns.hasCallToAction = true;\n      }\n    }\n  });\n  \n  patterns.averageCaptionLength = Math.round(totalLength / posts.length);\n  \n  return patterns;\n}\n\nreturn [{\n  json: {\n    originalData: webhookData,\n    analysis: contentAnalysis,\n    readyForAI: true,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "content-analyzer",
+      "name": "Content Intelligence Analyzer",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "getRows",
+        "documentId": "your-google-sheet-id",
+        "sheetName": "Content Performance",
+        "options": {
+          "columns": {
+            "values": {
+              "item": [
+                {
+                  "column": "Post ID"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "id": "get-post-history",
+      "name": "Get Processed Posts History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [680, 500],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-oauth",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// n8n Function: Filter out already processed posts.\nconst analysisResult = $input.first().json;\nconst topPosts = analysisResult.analysis.selectedPosts;\n\n// Get the list of already processed post IDs from your Google Sheet.\nconst processedItems = $items(\"get-post-history\");\nconst processedPostIds = new Set(processedItems.map(item => item.json['Post ID']));\n\n// Filter the top posts, keeping only the ones that have NOT been processed before.\nconst newTopPosts = topPosts.filter(post => !processedPostIds.has(post.shortcode));\n\n// If there are no new posts to process, stop the workflow.\nif (newTopPosts.length === 0) {\n  console.log(\"No new high-performing posts to process. Stopping workflow.\");\n  return null; // Stops the workflow from proceeding.\n}\n\nconsole.log(`Found ${newTopPosts.length} new posts to process.`);\n\n// Replace the old list of posts with our newly filtered list.\nanalysisResult.analysis.selectedPosts = newTopPosts;\n\n// Pass the updated data to the next node (AI Content Variation Generator).\nreturn [{\n  json: analysisResult\n}];"
+      },
+      "id": "filter-duplicates",
+      "name": "Filter Duplicate Posts",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "chatId": "{{ $json.analysis.selectedPosts[0].shortcode }}",
+        "text": "Analyze this Instagram post data and create 3 engaging variations for different platforms.\\n\\nOriginal Post Data:\\n- Caption: {{ $json.analysis.selectedPosts[0].caption }}\\n- Engagement: {{ $json.analysis.selectedPosts[0].likes + $json.analysis.selectedPosts[0].comments }} total\\n- Hashtags: {{ $json.analysis.selectedPosts[0].hashtags.join(', ') }}\\n- Content Type: {{ $json.analysis.selectedPosts[0].is_video ? 'Video' : 'Image' }}\\n\\nBrand Context: Clothing/Textile business (@sawantrajtejraj)\\nTop performing hashtags from analysis: {{ $json.analysis.topHashtags.slice(0,5).join(', ') }}\\n\\nCreate variations for:\\n1. Instagram (engaging, visual-focused)\\n2. Facebook (community-focused, longer form)\\n3. LinkedIn (professional, industry insights)\\n\\nMaintain the successful elements while making each platform-appropriate. Include relevant hashtags and ensure the tone matches the original brand voice.",
+        "options": {
+          "model": "gpt-4-vision-preview",
+          "maxTokens": 1500,
+          "temperature": 0.7
+        }
+      },
+      "id": "ai-content-generator",
+      "name": "AI Content Variation Generator",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credentials",
+          "name": "OpenAI GPT-4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Content Parsing and Platform Optimization\n// Parses AI-generated content and prepares for each platform\n\nconst aiResponse = $input.first().json.choices[0].message.content;\nconst originalData = $input.first().json.analysis;\n\n// Parse AI response to extract platform-specific content\nconst platforms = {\n  instagram: extractPlatformContent(aiResponse, 'Instagram'),\n  facebook: extractPlatformContent(aiResponse, 'Facebook'), \n  linkedin: extractPlatformContent(aiResponse, 'LinkedIn')\n};\n\nfunction extractPlatformContent(text, platform) {\n  const regex = new RegExp(`${platform}[\\s\\S]*?(?=\\n\\n|$)`, 'i');\n  const match = text.match(regex);\n  \n  if (match) {\n    const content = match[0].replace(new RegExp(`^.*?${platform}.*?\\n`, 'i'), '').trim();\n    return {\n      caption: content,\n      hashtags: extractHashtags(content),\n      platform: platform.toLowerCase(),\n      ready: true\n    };\n  }\n  \n  return {\n    caption: `Check out our latest ${originalData.selectedPosts[0].is_video ? 'video' : 'collection'}! 🔥`,\n    hashtags: originalData.topHashtags.slice(0, 5),\n    platform: platform.toLowerCase(),\n    ready: false\n  };\n}\n\nfunction extractHashtags(text) {\n  const hashtagRegex = /#\\w+/g;\n  const matches = text.match(hashtagRegex) || [];\n  return matches.map(tag => tag.substring(1)); // Remove # symbol\n}\n\n// Prepare scheduling data\nconst schedulingData = {\n  baseContent: {\n    imageUrl: originalData.selectedPosts[0].url,\n    originalEngagement: originalData.selectedPosts[0].likes + originalData.selectedPosts[0].comments,\n    contentType: originalData.selectedPosts[0].is_video ? 'video' : 'image'\n  },\n  platforms: platforms,\n  metadata: {\n    generatedAt: new Date().toISOString(),\n    originalPost: originalData.selectedPosts[0].shortcode,\n    performanceScore: calculatePerformanceScore(originalData.selectedPosts[0])\n  }\n};\n\nfunction calculatePerformanceScore(post) {\n  const engagement = post.likes + post.comments;\n  const daysSincePost = Math.floor((new Date() - new Date(post.date)) / (1000 * 60 * 60 * 24));\n  return Math.round(engagement / Math.max(daysSincePost, 1));\n}\n\nreturn [{\n  json: schedulingData\n}];"
+      },
+      "id": "content-parser",
+      "name": "Platform Content Parser",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.platforms.instagram.ready }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "instagram-condition",
+      "name": "Instagram Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.platforms.facebook.ready }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "facebook-condition",
+      "name": "Facebook Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.platforms.linkedin.ready }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "linkedin-condition",
+      "name": "LinkedIn Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1560, 400]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "create",
+        "caption": "={{ $json.platforms.instagram.caption }}",
+        "mediaUrl": "={{ $json.baseContent.imageUrl }}",
+        "additionalFields": {
+          "locationId": "",
+          "userTags": []
+        }
+      },
+      "id": "instagram-post",
+      "name": "Instagram Publisher",
+      "type": "n8n-nodes-base.instagram",
+      "typeVersion": 1,
+      "position": [1780, 180],
+      "credentials": {
+        "instagramOAuth2Api": {
+          "id": "instagram-oauth",
+          "name": "Instagram Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "create",
+        "postType": "page",
+        "content": "={{ $json.platforms.facebook.caption }}",
+        "additionalFields": {
+          "link": "={{ $json.baseContent.imageUrl }}"
+        }
+      },
+      "id": "facebook-post",
+      "name": "Facebook Publisher",
+      "type": "n8n-nodes-base.facebook",
+      "typeVersion": 1,
+      "position": [1780, 280],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "facebook-oauth",
+          "name": "Facebook Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "create",
+        "text": "={{ $json.platforms.linkedin.caption }}",
+        "additionalFields": {
+          "visibility": "PUBLIC"
+        }
+      },
+      "id": "linkedin-post",
+      "name": "LinkedIn Publisher",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [1780, 380],
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "linkedin-oauth",
+          "name": "LinkedIn Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "appendOrUpdate",
+        "documentId": "your-google-sheet-id",
+        "sheetName": "Content Performance",
+        "columnToMatchOn": "Post ID",
+        "valueToMatchOn": "={{ $json.metadata.originalPost }}",
+        "valuesToWrite": {
+          "timestamp": "={{ $json.metadata.generatedAt }}",
+          "original_engagement": "={{ $json.baseContent.originalEngagement }}",
+          "performance_score": "={{ $json.metadata.performanceScore }}",
+          "instagram_posted": "={{ $json.platforms.instagram.ready }}",
+          "facebook_posted": "={{ $json.platforms.facebook.ready }}",
+          "linkedin_posted": "={{ $json.platforms.linkedin.ready }}",
+          "content_type": "={{ $json.baseContent.contentType }}"
+        }
+      },
+      "id": "performance-tracker",
+      "name": "Performance Tracker",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [2000, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-oauth",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Success Notification Generator\n// Creates summary of automation execution\n\nconst executionData = $input.first().json;\nconst timestamp = new Date().toISOString();\n\nconst summary = {\n  status: 'SUCCESS',\n  execution_time: timestamp,\n  original_post: executionData.metadata?.originalPost || 'unknown',\n  platforms_posted: {\n    instagram: executionData.platforms?.instagram?.ready || false,\n    facebook: executionData.platforms?.facebook?.ready || false,\n    linkedin: executionData.platforms?.linkedin?.ready || false\n  },\n  performance_metrics: {\n    original_engagement: executionData.baseContent?.originalEngagement || 0,\n    performance_score: executionData.metadata?.performanceScore || 0,\n    content_type: executionData.baseContent?.contentType || 'image'\n  },\n  next_execution: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()\n};\n\n// Generate notification message\nconst message = `🚀 Content Automation Completed Successfully!\\n\\n📊 Execution Summary:\\n• Original Post: ${summary.original_post}\\n• Performance Score: ${summary.performance_metrics.performance_score}\\n• Platforms Posted: ${Object.entries(summary.platforms_posted).filter(([,posted]) => posted).map(([platform]) => platform).join(', ')}\\n• Content Type: ${summary.performance_metrics.content_type}\\n\\n⏰ Next Execution: ${new Date(summary.next_execution).toLocaleString()}\\n\\n✅ All systems running smoothly!`;\n\nreturn [{\n  json: {\n    summary: summary,\n    notification_message: message,\n    webhook_response: {\n      status: 'success',\n      message: 'Content automation completed',\n      execution_id: `exec_${Date.now()}`,\n      timestamp: timestamp\n    }\n  }\n}];"
+      },
+      "id": "success-notification",
+      "name": "Success Notification",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [2220, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "requestMethod": "POST",
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "{\n  \"text\": \"{{ $json.notification_message }}\",\n  \"username\": \"Content Automation Bot\",\n  \"icon_emoji\": \":robot_face:\"\n}",
+        "options": {}
+      },
+      "id": "slack-notification",
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2440, 200]
+    },
+    {
+      "parameters": {
+        "to": "client@email.com",
+        "subject": "📈 Daily Content Automation Report",
+        "emailFormat": "html",
+        "message": "<h2>🚀 Your Social Media Automation Report</h2>\\n\\n<p><strong>Execution Time:</strong> {{ $json.summary.execution_time }}</p>\\n\\n<h3>📊 Performance Summary</h3>\\n<ul>\\n  <li><strong>Original Post:</strong> {{ $json.summary.original_post }}</li>\\n  <li><strong>Performance Score:</strong> {{ $json.summary.performance_metrics.performance_score }}</li>\\n  <li><strong>Original Engagement:</strong> {{ $json.summary.performance_metrics.original_engagement }}</li>\\n  <li><strong>Content Type:</strong> {{ $json.summary.performance_metrics.content_type }}</li>\\n</ul>\\n\\n<h3>🎯 Platform Status</h3>\\n<ul>\\n  <li><strong>Instagram:</strong> {{ $json.summary.platforms_posted.instagram ? '✅ Posted' : '❌ Skipped' }}</li>\\n  <li><strong>Facebook:</strong> {{ $json.summary.platforms_posted.facebook ? '✅ Posted' : '❌ Skipped' }}</li>\\n  <li><strong>LinkedIn:</strong> {{ $json.summary.platforms_posted.linkedin ? '✅ Posted' : '❌ Skipped' }}</li>\\n</ul>\\n\\n<p><strong>Next Execution:</strong> {{ $json.summary.next_execution }}</p>\\n\\n<p>Your content automation is running smoothly! 🎉</p>",
+        "options": {}
+      },
+      "id": "email-report",
+      "name": "Email Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2440, 400],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP Email"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "trigger-ig-workflow",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [40, 100]
+    },
+    {
+      "parameters": {
+        "triggerTimes": [
+          {
+            "mode": "everyDay",
+            "hour": 9,
+            "minute": 0
+          }
+        ]
+      },
+      "id": "cron-trigger",
+      "name": "Daily Scheduler",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [40, 200]
+    }
+  ],
+  "connections": {
+    "manual-trigger": {
+      "main": [
+        [
+          {
+            "node": "execute-scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "execute-scraper": {
+      "main": [
+        [
+          {
+            "node": "read-scraper-output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read-scraper-output": {
+      "main": [
+        [
+          {
+            "node": "content-analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content-analyzer": {
+      "main": [
+        [
+          {
+            "node": "filter-duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get-post-history": {
+      "main": [
+        [
+          {
+            "node": "filter-duplicates",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "filter-duplicates": {
+      "main": [
+        [
+          {
+            "node": "ai-content-generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai-content-generator": {
+      "main": [
+        [
+          {
+            "node": "content-parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content-parser": {
+      "main": [
+        [
+          {
+            "node": "instagram-condition",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "facebook-condition",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "linkedin-condition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instagram-condition": {
+      "main": [
+        [
+          {
+            "node": "instagram-post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "facebook-condition": {
+      "main": [
+        [
+          {
+            "node": "facebook-post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "linkedin-condition": {
+      "main": [
+        [
+          {
+            "node": "linkedin-post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instagram-post": {
+      "main": [
+        [
+          {
+            "node": "performance-tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "facebook-post": {
+      "main": [
+        [
+          {
+            "node": "performance-tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "linkedin-post": {
+      "main": [
+        [
+          {
+            "node": "performance-tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "performance-tracker": {
+      "main": [
+        [
+          {
+            "node": "success-notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "success-notification": {
+      "main": [
+        [
+          {
+            "node": "slack-notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "email-report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "execute-scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cron-trigger": {
+      "main": [
+        [
+          {
+            "node": "execute-scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "id": "instagram-automation",
+      "name": "Instagram Automation"
+    },
+    {
+      "id": "content-intelligence",
+      "name": "Content Intelligence"
+    }
+  ],
+  "triggerCount": 1,
+  "versionId": "custom-v2.0"
+}

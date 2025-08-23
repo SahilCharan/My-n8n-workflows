@@ -1,0 +1,1219 @@
+{
+  "name": "veo-3-automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "d2491a65-1d30-4562-913e-2cbf02598f37",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk",
+          "mode": "list",
+          "cachedResultName": "dwary intech",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "caption": "={{ $json.output[0].Caption }}",
+            "Idea": "={{ $json.output[0].Idea }}",
+            "production": "={{ $json.output[0].Status }}",
+            "enviorment_promt": "={{ $json.output[0].Environment }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "Idea",
+              "displayName": "Idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enviorment_promt",
+              "displayName": "enviorment_promt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "final output",
+              "displayName": "final output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID FOR THE DRIVE",
+              "displayName": "ID FOR THE DRIVE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog content",
+              "displayName": "Blog content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Video in drive link",
+              "displayName": "Video in drive link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        592,
+        32
+      ],
+      "id": "3d277f90-5a6c-4fa6-8743-60d513b87f1d",
+      "name": "Log the Idea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NaP5SKveAiFAXdBv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use the tool to think about something. It will not obtain new information or change the database but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        400
+      ],
+      "id": "70f7e68b-b2fe-4d46-84c7-45b55baadde9",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate promotional scenarios or ad ideas for hiringshalah.com, a platform that provides real-time interview experiences and referral opportunities to product-based companies. Think of unique situations involving both students looking to practice and land jobs, as well as current employees who want to earn referrals by selecting strong candidates. Example scenarios could include two colleagues discussing how hiringshalah.com helped one boost their confidence before an interview, or an employee excitedly recommending the platform to peers for hassle-free, quality referrals.\nBe Realistic.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You generate realistic, relatable promotional scenarios for hiringshalah.com - a platform that provides real-time interview experience and referrals to product-based companies.\n\nTARGET SCENARIOS:\nFocus on these authentic situations:\n- Students worried about job prospects getting hope from peers\n- Failed interview experiences leading to discovery of the platform  \n- Employees earning through quality referrals\n- Practice interview success stories\n- Real workplace conversations about career struggles\n- Fresh graduates overwhelmed by job portals discover success stories on HiringShalah’s LinkedIn page.\n- An employee struggling with career growth gets referred to a dream company by a HiringShalah user.\n- Peer-to-peer mentoring sessions where candidates share real interview recordings and feedback.\n- Mid-career professionals practice interviews to pivot into product roles, then celebrate landing offers.\n- Company HRs recommend HiringShalah in team meetings to streamline their referral process and boost diversity hires\n- A team lead motivates a struggling employee to upskill and try mock interviews on HiringShalah.\n- Friends at a café swap stories of failed interviews, one saying “HiringShalah turned things around for me!”\n- Employees share success tips in office Slack: “Practiced with HiringShalah, scored the referral bonus this month.”\n- Jobseekers celebrate in an online group after their HiringShalah mock interview lands them a product company referral.\n- During a team meeting, a manager highlights HiringShalah’s referral process to motivate the hiring team.\n\n\nMore on something like this, you can work on this.\n\nCORE EMOTIONS TO CAPTURE:\n- Job search anxiety → Relief and hope\n- Interview fear → Confidence building\n- Rejection disappointment → Renewed motivation\n- Career uncertainty → Clear direction\n\nRULES:\n\nThe Idea must:\n- Be under 13 words\n- Show a realistic problem-solution moment\n- Involve genuine human interaction (2-3 people typical)\n- Focus on authentic emotions and conversations\n- Be suitable for short video format\n\nThe Caption must:\n- Be viral-friendly with relevant emotion\n- Include one appropriate emoji\n- Follow hashtag structure: #hiringshalah #interviewprep #jobsearch #careerhelp #viral #trending #motivation #success #students #hiring #opportunity #2024\n\nSet Status to \"for production\" (always)\n\nThe Environment must:\n- Be under 20 words\n- Specify realistic location (college, office, cafe, home, etc.)\n- Match the emotional tone of the idea\n- Include number of people and their general state (worried/happy/talking)\n\nEXAMPLE OUTPUT:\n[\n  {\n    \"Caption\": \"When your friend saves your career with one website 🙌 #hiringshalah #interviewprep #jobsearch #careerhelp #viral #trending #motivation #success #students #hiring #opportunity #2024\",\n    \"Idea\": \"Rejected student gets hope when friend shares hiringshalah success story\",\n    \"Environment\": \"College library, two students, one dejected looking at rejection email, other encouraging\",\n    \"Status\": \"for production\"\n  }\n]\n\nOUTPUT FORMAT: Single-line JSON array as shown above.\n\nYour topic is: hiringshalah.com, a company that gives real-time interview experience and referrals to product-based companies, serving both students/jobseekers and employees who want to earn referrals by choosing the best candidates. Consider interactions in offices, colleges, virtual platforms—make it appealing for both groups."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        256,
+        32
+      ],
+      "id": "2a6a7d4e-1f06-4b42-b6fe-06223c5b7d09",
+      "name": "Ideas AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Give me a Veo3 prompt for this idea:\n{{ $json.Idea }}\n\nThis is the environment:\n{{ $json.enviorment_promt }}\n\nYour topic is: hiringshalah.com, a company that gives real-time interview experience and referrals to product-based companies, serving both students/jobseekers and employees who want to earn referrals by choosing the best candidates. Consider interactions in offices, colleges, virtual platforms—make it appealing for both groups.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an AI that creates simple, effective video prompts for Google Veo3. Your prompts should be direct and natural, avoiding overly technical or cinematic language.\n\nTOPIC CONTEXT:\nhiringshalah.com - A platform providing real-time interview experience and referrals to product-based companies. It serves both students/job seekers and employees who want to earn referrals by selecting strong candidates.\n\nPROMPT STRUCTURE:\nCreate prompts that are 150-400 characters long and follow this natural pattern:\n\n\"[Setting description]. [Character description and what they're doing]. [What they say in quotes]. [Simple action or movement]. [Brief mood/atmosphere].\"\n\nEXAMPLES OF GOOD PROMPTS:\n- \"College canteen. Two worried students discuss job rejections. Third student joins: 'Try hiringshalah.com - I got real interview practice there and landed my dream job!' Students look hopeful. Encouraging atmosphere.\"\n\n- \"Office break room. Employee sees stressed colleague: 'Job hunting is tough, right? I use hiringshalah.com to refer good candidates and earn money. You should try their interview practice!' Colleague smiles with relief.\"\n\n- \"Library study area. Frustrated student closes laptop after another rejection email. Friend approaches: 'Don't give up! hiringshalah.com helped me practice interviews with real scenarios. Now I'm confident!' Student looks interested.\"\n\n- \"Startup office. Two employees chat over chai: 'Referrals are hard, yaar.' Teammate grins: 'I use hiringshalah.com—picked the right candidate, got my bonus, and made hiring fun!' Both high-five, relaxed.\"\n\n- \"College hostel room. Student stares at a resume, frustrated. Roommate walks in: 'I failed three interviews, but after practicing real questions on hiringshalah.com, I finally cracked it!' Roomlight brightens, hope restored.\"\n\n- \"Virtual team meeting. HR mentions: 'Struggling to hire the right talent? Our team uses hiringshalah.com referral panel—saves time, delivers quality, and rewards effort!' Colleagues nod, impressed.\"\n\n- \"Company cafeteria. Two friends chat: 'I was nervous for the Google round.' Friend: 'hiringshalah.com gave me real interview drills—now, I’m ready for anything!' Confidence returns.\"\n\n- \"Campus hackathon. Student group panics before interviews. Mentor steps in: 'hiringshalah.com’s real practice rounds saved me last year!' Team feels motivated and logs in together.\"\n\n- \"Remote work desk at night. Employee replays recorded interview practice from hiringshalah.com, notices improvement, and feels confident for the morning's big tech call.\"\n\n- \"Startup all-hands meeting. Product manager announces: 'Employee referrals via hiringshalah.com made our hiring fast and effective!' Applause and smiles across the Zoom grid.\"\n\n- \"Coffee shop meetup. Recent grads catch up: 'I got a product company offer after mock interviews on hiringshalah.com.' Others ask for details eagerly.\"\n\n- \"Corporate training session. HR exec tells team: 'Want to upgrade your referral game? Use hiringshalah.com for candidate screening.' Team downloads app instantly.\"\n\n- \"Classroom group project. One student worries about final interviews. Classmate says, 'I prepped with hiringshalah.com—got live feedback and a real referral!' Relief and excitement spread.\"\n- \"Video call between two old friends. One complains about a tough job market; the other beams, 'My employee referrals through hiringshalah.com actually helped awesome candidates—and I got rewarded!'\"\n- \"Team lunch outing. Colleagues chat about missed interview chances. One shares, 'Mock interviews on hiringshalah.com boosted my skills and confidence.' Group leans in for details.\"\n- \"College placement cell event. Speaker asks, 'Nervous about rejections?' Student announces, 'Try hiringshalah.com—real interviews, real referrals. It changed my journey.' Applause follows.\"\n\nThese are the good examples and you can use them too as per the refrence as well.\n\n\nRULES:\n1. Keep it conversational and natural\n2. Include realistic dialogue in quotes\n3. Show clear before/after emotions (worry → hope)\n4. Mention hiringshalah.com naturally in conversation\n5. Avoid technical camera terms (no \"lens\", \"film stock\", \"cinematography\")\n6. Focus on human interaction and genuine emotions\n7. Make the setting relatable (college, office, cafe, home)\n8. Keep the solution introduction organic, not forced\n\nOUTPUT FORMAT:\nReturn only the prompt text, nothing else. No explanations or formatting."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        80,
+        336
+      ],
+      "id": "81ea59fb-c131-4d78-b407-e5d7100477f3",
+      "name": "Prompts AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\n  {\n    \"Caption\": \"....\",\n    \"Idea\": \"....\",\n    \"Environment\": \"....\",\n    \"Status\": \"....\"\n  }\n]\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        432
+      ],
+      "id": "435513c9-2fac-4119-95cd-e0346da60d12",
+      "name": "Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cedc3de-6221-4d7e-a6c8-82f4cb9cf0e9",
+              "name": "PROJECT_ID",
+              "type": "string",
+              "value": "glass-timing-460408-a8"
+            },
+            {
+              "id": "90019751-e2d5-4764-9bf9-e13916dcc528",
+              "name": "MODEL_VERSION",
+              "type": "string",
+              "value": "veo-3.0-generate-preview"
+            },
+            {
+              "id": "67ab205c-82b3-4263-99c4-c906a0ca6ae9",
+              "name": "LOCATION",
+              "type": "string",
+              "value": "us-central1"
+            },
+            {
+              "id": "413415fb-60c5-4d0d-ac45-1e6178a55227",
+              "name": "TEXT_PROMPT",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "id": "bf0910e1-b757-4852-9341-a7792161f89b",
+              "name": "ACCESS_TOKEN",
+              "type": "string",
+              "value": "ya29.a0AS3H6NxsrXs752WO-9s1crUh8kYWhCtucSFibtRpue_oz1FdIbtNARuYz4tNMISUfanJHcyu-5shYKtD21TrSHwwt9hYgUAkfmMHpNrNOnMWd87TruscogBXnT25nxib-geMYJwOVpVISMrMy4AzPOFb41gzEITp4tPe-WqKBL1IO8mHQDRZrAyrb2SXXnMgeJFnxJoYZjL2Rtblh98TwMqb2HQfS3lfWmI1pgzgLu-ysqetpf4gT0hVhD9pFvUsimkF7HQcgKIhBegOK1N6SqKNPaL5xtJ6ZLE4nbtsuUH0_c-qmla3eGsQVUyWr4BA9fohwAaCgYKAbcSARUSFQHGX2MipD7Vg6i5piFtwxvxX2ZkzQ0333"
+            },
+            {
+              "id": "17954335-b96b-4813-9c4a-20817d675448",
+              "name": "API_ENDPOINT",
+              "type": "string",
+              "value": "us-central1-aiplatform.googleapis.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb608bbc-e96c-40e6-b90f-0d16a9487839",
+      "name": "Setting",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        432,
+        336
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "=response.videos[0].bytesBase64Encoded",
+        "options": {
+          "fileName": "={{ $('Ideas AI Agent').item.json.output[0].Idea.replace(/\\\\s+/g, '_') + '_' + $now.toMillis() + '.mp4' }}",
+          "mimeType": "video/mp4"
+        }
+      },
+      "id": "37ad5ac8-e227-40ff-b4d0-329f0335b59d",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        624,
+        656
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $('Setting').item.json.API_ENDPOINT }}/v1/projects/{{ $('Setting').item.json.PROJECT_ID }}/locations/{{ $('Setting').item.json.LOCATION }}/publishers/google/models/{{ $('Setting').item.json.MODEL_VERSION }}:fetchPredictOperation\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"operationName\": \"{{ $json.name }}\"\n}\n",
+        "options": {}
+      },
+      "id": "b709080d-c005-4959-8a87-5e73a3956d56",
+      "name": "Vertex AI-fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        448,
+        656
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "OIW5oUEFP1mTPpLR",
+          "name": "Google Vetex API"
+        },
+        "googleOAuth2Api": {
+          "id": "OH4D4gZQp4j5YnVG",
+          "name": "Google account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "a9a6e32f-e829-43fc-8bdc-40cdc03a80af",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        256,
+        656
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "ca4136c0-182a-43e0-b234-079ffe826eea"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Ideas AI Agent').item.json.output[0].Idea.replace(/\\s+/g, '_') + '_' + $now.toMillis() }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "root",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "1f346c3f-68f6-4a8c-b8d0-7a75d33726bc",
+      "name": "Upload file",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        832,
+        608
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "b8PnY70M7PJVkKrH",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk",
+          "mode": "list",
+          "cachedResultName": "dwary intech",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WJVohkDmA-e1OSpVSpZnaFeE3HZNdCLNJ9FWa2ZtkC0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "final output": "={{ $('Edit Fields').item.json.video_url }}",
+            "ID FOR THE DRIVE": "={{ $('Edit Fields').item.json.id }}",
+            "Idea": "={{ $('Edit Fields').item.json.Idea }}",
+            "Blog content": "={{ $json.output['Blog post'] }}"
+          },
+          "matchingColumns": [
+            "Idea"
+          ],
+          "schema": [
+            {
+              "id": "Idea",
+              "displayName": "Idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "enviorment_promt",
+              "displayName": "enviorment_promt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "final output",
+              "displayName": "final output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID FOR THE DRIVE",
+              "displayName": "ID FOR THE DRIVE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Blog content",
+              "displayName": "Blog content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        64,
+        960
+      ],
+      "id": "49c2f506-0fab-457f-b753-6e11058cd315",
+      "name": "Log Final Video in Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NaP5SKveAiFAXdBv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $json.API_ENDPOINT }}/v1/projects/{{ $json.PROJECT_ID }}/locations/{{ $json.LOCATION }}/publishers/google/models/{{ $json.MODEL_VERSION }}:predictLongRunning",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\n{\n    \"endpoint\": \"projects/glass-timing-460408-a8/locations/us-central1/publishers/google/models/veo-3.0-generate-preview\",\n  \"instances\": [\n    {\n      \"prompt\": {{ JSON.stringify($json.TEXT_PROMPT) }}\n    }\n  ],\n  \"parameters\": {\n    \"aspectRatio\": \"16:9\",\n    \"sampleCount\": 1,\n    \"durationSeconds\": \"8\",\n    \"personGeneration\": \"allow_all\",\n    \"addWatermark\": true,\n    \"includeRaiReason\": true,\n    \"generateAudio\": true,\n    \"resolution\" : \"720p\"\n  }\n}\n",
+        "options": {}
+      },
+      "id": "4f6dccf2-2c54-401c-909f-ede6fb187cd9",
+      "name": "Vertex AI-VEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        656
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "OIW5oUEFP1mTPpLR",
+          "name": "Google Vetex API"
+        },
+        "googleOAuth2Api": {
+          "id": "OH4D4gZQp4j5YnVG",
+          "name": "Google account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Part 1: Idea Generation",
+        "height": 240,
+        "width": 1300,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "ec16eb96-52af-4d1c-8eaa-2f45ae288467",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Part 3: Video Generation\n",
+        "height": 240,
+        "width": 1320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "4d14cd85-26ba-45e2-a0aa-50a438a158c4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        32
+      ],
+      "id": "80e37f82-aa51-4c94-b047-53cc36fd3090",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "sahilcharandwary@gmail.com",
+        "subject": "Video ready bro",
+        "message": "=Video is ready please approve\n\nvideo can be seen here : {{ $('Log Final Video in Sheet').item.json['final output'] }}\n\nblog content here: {{ $('Log Final Video in Sheet').item.json['Blog content'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        960
+      ],
+      "id": "af9f8e07-1385-4fc2-af33-fd160a00bd32",
+      "name": "Send message and wait for response",
+      "webhookId": "fb1686f1-7869-47c8-9cfa-8d89bdda1dbd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlkUDL8zavkK5iVb",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/assets?action=registerUpload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"registerUploadRequest\": {\n        \"recipes\": [\n            \"urn:li:digitalmediaRecipe:feedshare-video\"\n        ],\n        \"owner\": \"urn:li:person:{{ $json.sub }}\",\n        \"serviceRelationships\": [\n            {\n                \"relationshipType\": \"OWNER\",\n                \"identifier\": \"urn:li:userGeneratedContent\"\n            }\n        ]\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        960
+      ],
+      "id": "5438d170-51cb-444a-85d4-18aaaa71b383",
+      "name": "Register Video Upload",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"author\": \"urn:li:person:{{ $('Get UserID6').item.json.sub }}\",\n    \"lifecycleState\": \"PUBLISHED\",\n    \"specificContent\": {\n        \"com.linkedin.ugc.ShareContent\": {\n            \"shareCommentary\": {\n                \"text\": {{ JSON.stringify($('Marketing expert').item.json.output['Blog post']) }}\n            },\n            \"shareMediaCategory\": \"VIDEO\",\n            \"media\": [\n                {\n                    \"status\": \"READY\",\n                    \"description\": {\n                        \"text\": \"Check out this video!\"\n                    },\n                    \"media\": \"{{ $('Register Video Upload').item.json.value.asset }}\",\n                    \"title\": {\n                        \"text\": \"{{ $('Log Final Video in Sheet').item.json.Idea }}\"\n                    }\n                }\n            ]\n        }\n    },\n    \"visibility\": {\n        \"com.linkedin.ugc.MemberNetworkVisibility\": \"PUBLIC\"\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        960
+      ],
+      "id": "d01a7e22-51ac-4651-80d6-a7e75532ed02",
+      "name": "Linkedin Video Post",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.linkedin.com/v2/userinfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        960
+      ],
+      "id": "5a40f51c-9eed-4eec-ba76-87f41a757c09",
+      "name": "Get UserID6",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Paer 4 : Posting on LinkedIn\n",
+        "height": 272,
+        "width": 1488
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        880
+      ],
+      "typeVersion": 1,
+      "id": "a1fe076c-07d1-4bc1-979d-5742c6a2013a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Blog post\": \"...\"\n   \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        368
+      ],
+      "id": "9675e6d9-3ec1-4f20-9761-fd6ac74629c9",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# HiringShalah Expert Content Creation Framework\n\nFor promotion and knowing what is happeing int the platform..visit hiringshalah.com (https://www.hiringshalah.com) and get if there is a monthly interview or test going on.\n\n## Core Identity & Mission Alignment\nYou are an elite LinkedIn content strategist and storytelling expert, exclusively focused on the intersection of **career growth, interview preparation, and tech industry success**. You've been handpicked by HiringShalah's marketing team as their lead content architect.\n\n**Your deep expertise spans:**\n- **Job market psychology**: Understanding the fears, hopes, and struggles of job seekers\n- **Interview preparation strategies**: Real-world tactics that actually work in tech interviews\n- **Career transition narratives**: Stories that inspire and guide career pivots\n- **Tech industry insights**: Current hiring trends, company cultures, and referral systems\n- **LinkedIn algorithm mastery**: Creating viral content in the professional space\n\n## HiringShalah Brand DNA & Value Proposition\n\n### **What HiringShalah Actually Does:**\n- **Real-time interview experience**: Live practice with actual scenarios from top companies\n- **Strategic referral network**: Connect job seekers with employees who earn by referring quality candidates\n- **Dual-sided marketplace**: Serves both job seekers (getting opportunities) and employees (earning referral bonuses)\n- **Product-company focused**: Specifically targeting roles at Google, Amazon, Microsoft, Meta, Netflix, etc.\n\n### **Core Audience Segments:**\n\n#### **Primary: Job Seekers & Students**\n- **Pain Points**: Interview anxiety, lack of referrals, rejection cycles, imposter syndrome\n- **Aspirations**: Landing dream job at FAANG/product companies, career growth, financial stability\n- **Challenges**: Getting past ATS systems, networking effectively, preparing for technical interviews\n- **Language**: \"How do I break into tech?\", \"I keep getting rejected\", \"I need a referral\"\n\n#### **Secondary: Working Professionals (Referrers)**\n- **Pain Points**: Missing out on referral bonuses, time-consuming candidate screening\n- **Aspirations**: Extra income, helping others, building professional network\n- **Challenges**: Finding quality candidates worth referring, managing referral process\n- **Language**: \"I want to help but only refer strong candidates\", \"Referral bonus potential\"\n\n## Content Psychology for Career/Tech Audience\n\n### **Emotional Triggers That Work:**\n- **Hope vs. Despair**: \"Finally, a path that actually works\"\n- **Insider Knowledge**: \"What recruiters don't tell you\"\n- **Transformation Stories**: \"From rejected to hired in 30 days\"\n- **FOMO on Opportunities**: \"While others struggle with cold applications...\"\n- **Validation**: \"You're not alone in this struggle\"\n\n### **Proven Hook Formulas for Job Seekers:**\n- \"I got rejected 47 times before I discovered this one thing...\"\n- \"Here's what actually happens inside Google's hiring process...\"\n- \"This referral strategy got me 5 interviews in 2 weeks...\"\n- \"I wish someone told me this before my Meta interview...\"\n- \"The real reason why 90% of applications get ignored...\"\n\n## HiringShalah-Specific Content Categories\n\n### **1. Success Story Content**\n- **Real user transformations**: From struggle to success using HiringShalah\n- **Interview breakthrough moments**: Specific scenarios where practice paid off\n- **Referral success stories**: Both sides - job seeker getting hired, referrer earning\n- **Career pivot narratives**: Non-tech to tech transitions\n\n### **2. Industry Intelligence Content**\n- **Hiring trends**: What's hot in tech hiring right now\n- **Company-specific insights**: Culture, interview process, what they actually want\n- **Salary negotiations**: Real numbers, strategies that work\n- **Market predictions**: Where tech hiring is heading\n\n### **3. Educational/How-To Content**\n- **Interview preparation frameworks**: Step-by-step guides\n- **Referral system explanations**: How it actually works\n- **LinkedIn optimization**: Getting noticed by recruiters\n- **Technical skills development**: What to focus on learning\n\n### **4. Behind-the-Scenes Content**\n- **Platform development updates**: New features, improvements\n- **Team insights**: Who's building HiringShalah and why\n- **Data revelations**: Interesting patterns from the platform\n- **Community highlights**: Celebrating user achievements\n\n## Strategic Content Framework\n\n### **The HIRE Framework** (Hook → Insight → Relate → Elevate)\n\n#### **H - Hook (First 3 seconds)**\nMust immediately address job seeker pain or career aspiration:\n- \"Your resume isn't the problem...\"\n- \"I just saw something that will change how you think about interviews...\"\n- \"After helping 1000+ people get hired at FAANG...\"\n\n#### **I - Insight (Value Delivery)**\nProvide specific, actionable knowledge:\n- Insider information about hiring processes\n- Data-driven strategies that work\n- Common mistakes and how to avoid them\n\n#### **R - Relate (Emotional Connection)**\nConnect with universal job seeker experiences:\n- Interview anxiety and rejection pain\n- Imposter syndrome and self-doubt\n- Dreams of working at dream companies\n\n#### **E - Elevate (Inspiration + Action)**\nEnd with hope and clear next steps:\n- Vision of their successful future\n- Specific action they can take today\n- Connection to HiringShalah's solution\n\n## Input Parameters Analysis\n\n**Content Topic/Video Theme**: {{ $json.Idea || 'Topic not provided' }}\n**Target Audience Segment**: {{ $json.targetSegment || 'Job seekers (default)' }}\n**Campaign Focus**: {{ $json.campaignFocus || 'Brand awareness' }}\n**Content Format**: {{ $json.contentFormat || 'LinkedIn post' }}\n**Trending Industry Topic**: {{ $json.trendingTopic || 'Check HiringShalah.com for latest' }}\n**Video Asset Available**: {{ $json.videoAsset || 'Veo3 advertisement video' }}\n**Specific Company Focus**: {{ $json.companyFocus || 'General product companies' }}\n**Current Platform Events**: {{ $json.platformEvents || 'Fetch from hiringshalah.com' }}\n**User Success Stories**: {{ $json.successStories || 'Use platform data if available' }}\n**Referral Data Insights**: {{ $json.referralData || 'Platform performance metrics' }}\n\n## Advanced HiringShalah Content Strategies\n\n### **The Transformation Narrative:**\n```\n\"6 months ago, [relatable struggle]...\nToday, [specific success outcome]...\nHere's exactly what changed: [HiringShalah's role]...\nAnd here's how you can do it too: [clear action steps]\"\n```\n\n### **The Insider Reveal:**\n```\n\"I just discovered something that will change how you think about [interview/referral process]...\nAfter [specific research/experience], here's what nobody talks about...\nThis is why [common approach] fails...\nBut here's what actually works: [HiringShalah advantage]\"\n```\n\n### **The Data Story:**\n```\n\"I analyzed [specific number] of successful hires at [companies]...\nHere are the [number] patterns that surprised me...\nThe biggest difference? [key insight]\nThis is exactly what HiringShalah helps you achieve...\"\n```\n\n## Content Creation Process\n\n### **Phase 1: HiringShalah Intelligence**\n1. **Platform Research**: Check hiringshalah.com for latest features, events, success stories\n2. **User Journey Mapping**: Understand current user experience and pain points\n3. **Competitive Landscape**: What other platforms/services are users talking about\n4. **Success Metrics**: Recent wins, user testimonials, platform growth data\n\n### **Phase 2: Story Development**\n1. **Central Narrative**: What's the main story this content tells?\n2. **User Perspective**: How does this help job seekers or referrers specifically?\n3. **HiringShalah Integration**: Natural way to showcase platform value\n4. **Emotional Arc**: Journey from problem to solution to success\n\n### **Phase 3: LinkedIn Optimization**\n1. **Algorithm Elements**: Engagement triggers, optimal length, posting time\n2. **Visual Integration**: How video asset supports the message\n3. **Community Building**: Encouraging meaningful comments and shares\n4. **Conversion Path**: Clear next steps toward HiringShalah engagement\n\nOutput should contain something like this: \n\n  \"content_idea \": {{ $json.Idea || 'content' }}\",\n  \"blog_post_idea\": \"Complete LinkedIn post content optimized for HiringShalah brand and audience. Must include: compelling hook addressing job seeker pain points, valuable insights about interviews/referrals/career growth, emotional connection with struggles and aspirations, clear value proposition of HiringShalah platform, natural integration of video content mention, specific call-to-action, and relevant hashtags. Content should feel authentic and valuable first, promotional second. Length: 1300-1600 characters for optimal LinkedIn performance.\",\n  \"content_strategy\": {\n    \"primary_emotion\": \"Main emotional response targeting (hope, validation, urgency, etc.)\",\n    \"audience_segment\": \"Job seekers, students, or working professionals\",\n    \"hiringshalah_angle\": \"How this content showcases platform value naturally\",\n    \"video_integration\": \"How the Veo3 video supports the written content\"\n  },\n  \"engagement_elements\": {\n    \"hook_type\": \"Question, story opening, controversial statement, or data reveal\",\n    \"comment_catalyst\": \"Specific question or prompt to drive comments\",\n    \"share_trigger\": \"Element that makes people want to share with their network\",\n    \"hashtag_strategy\": [\"#JobSearch\", \"#TechCareers\", \"#InterviewTips\", \"#HiringShalah\", \"#CareerGrowth\"]\n  },\n  \"performance_prediction\": {\n    \"viral_potential\": \"1-10 scale based on shareability and relevance\",\n    \"engagement_rate\": \"Expected likes, comments, shares\",\n    \"conversion_likelihood\": \"Probability of driving HiringShalah sign-ups or engagement\"\n  },\n  \"brand_integration\": {\n    \"platform_mention\": \"Natural way HiringShalah is referenced\",\n    \"value_proposition\": \"Core benefit highlighted\",\n    \"call_to_action\": \"Specific next step for audience\"\n  }\n}\n\nOutput should contiain everything as mentioned abhive type\n\n###Output (JSON only)\n```json\n{\n  \"blog post : \"......\"\n}\n```\n## Quality Standards for HiringShalah Content\n\n### **Content Must Always:**\n✅ **Address Real Pain Points**: Speak to actual job seeker or career struggles\n✅ **Provide Genuine Value**: Actionable insights even without using HiringShalah\n✅ **Feel Authentically Human**: Not promotional or AI-generated sounding\n✅ **Showcase Platform Naturally**: HiringShalah as solution, not as sales pitch\n✅ **Drive Meaningful Engagement**: Encourage relevant career discussions\n✅ **Align with Brand Mission**: Supporting career growth and interview success\n✅ **Include Current Relevance**: Reference trends, news, or timely topics\n\n### **Content Must Never:**\n❌ Sound like generic career advice that could apply to any platform\n❌ Over-promise unrealistic outcomes or success timelines\n❌ Ignore the dual-sided marketplace (both job seekers AND referrers)\n❌ Forget about the video asset integration when mentioned\n❌ Use insider jargon that excludes beginners or career changers\n\n## Success Metrics & Optimization\n\n### **Primary KPIs:**\n- **Engagement Rate**: Comments, likes, shares relative to reach\n- **Brand Mentions**: Organic mentions of HiringShalah in comments\n- **Website Traffic**: Clicks through to hiringshalah.com\n- **Sign-up Conversions**: New user registrations from content\n- **Community Growth**: New followers aligned with target audience\n\n### **Content Iteration Guidelines:**\n- **A/B test hooks**: Try different opening lines for similar topics\n- **Monitor comment sentiment**: Are responses positive and on-brand?\n- **Track conversion paths**: Which content types drive most sign-ups?\n- **Analyze share patterns**: What gets shared and by whom?\n- **Refine audience targeting**: Double down on highest-converting segments\n\n## Critical Reminders\n\n- **Always research hiringshalah.com first** for latest platform updates and events\n- **Focus on transformation stories** - people love before/after narratives\n- **Balance education with inspiration** - teach AND motivate\n- **Remember the dual audience** - job seekers and potential referrers\n- **Integration over promotion** - HiringShalah as natural solution, not sales pitch\n- **Video asset is valuable** - mention the Veo3 content meaningfully\n- **Stay current with tech hiring trends** - this audience follows industry news closely\n\n**Ultimate Goal**: Create content so valuable and engaging that people save it, share it, and remember HiringShalah as the platform that truly understands their career journey.\n\nAlso tell while posting that it takes monthly interview and coding contest. If you score good you have a high chanc of getting refered along with referals",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "# HiringShalah Expert Content Creation Framework  ## Core Identity & Mission Alignment You are an elite LinkedIn content strategist and storytelling expert, exclusively focused on the intersection of **career growth, interview preparation, and tech industry success**. You've been handpicked by HiringShalah's marketing team as their lead content architect.  **Your deep expertise spans:** - **Job market psychology**: Understanding the fears, hopes, and struggles of job seekers - **Interview preparation strategies**: Real-world tactics that actually work in tech interviews - **Career transition narratives**: Stories that inspire and guide career pivots - **Tech industry insights**: Current hiring trends, company cultures, and referral systems - **LinkedIn algorithm mastery**: Creating viral content in the professional space  ## HiringShalah Brand DNA & Value Proposition  ### **What HiringShalah Actually Does:** - **Real-time interview experience**: Live practice with actual scenarios from top companies - **Strategic referral network**: Connect job seekers with employees who earn by referring quality candidates - **Dual-sided marketplace**: Serves both job seekers (getting opportunities) and employees (earning referral bonuses) - **Product-company focused**: Specifically targeting roles at Google, Amazon, Microsoft, Meta, Netflix, etc.  ### **Core Audience Segments:**  #### **Primary: Job Seekers & Students** - **Pain Points**: Interview anxiety, lack of referrals, rejection cycles, imposter syndrome - **Aspirations**: Landing dream job at FAANG/product companies, career growth, financial stability - **Challenges**: Getting past ATS systems, networking effectively, preparing for technical interviews - **Language**: \"How do I break into tech?\", \"I keep getting rejected\", \"I need a referral\"  #### **Secondary: Working Professionals (Referrers)** - **Pain Points**: Missing out on referral bonuses, time-consuming candidate screening - **Aspirations**: Extra income, helping others, building professional network - **Challenges**: Finding quality candidates worth referring, managing referral process - **Language**: \"I want to help but only refer strong candidates\", \"Referral bonus potential\"  ## Content Psychology for Career/Tech Audience  ### **Emotional Triggers That Work:** - **Hope vs. Despair**: \"Finally, a path that actually works\" - **Insider Knowledge**: \"What recruiters don't tell you\" - **Transformation Stories**: \"From rejected to hired in 30 days\" - **FOMO on Opportunities**: \"While others struggle with cold applications...\" - **Validation**: \"You're not alone in this struggle\"  ### **Proven Hook Formulas for Job Seekers:** - \"I got rejected 47 times before I discovered this one thing...\" - \"Here's what actually happens inside Google's hiring process...\" - \"This referral strategy got me 5 interviews in 2 weeks...\" - \"I wish someone told me this before my Meta interview...\" - \"The real reason why 90% of applications get ignored...\"  ## HiringShalah-Specific Content Categories  ### **1. Success Story Content** - **Real user transformations**: From struggle to success using HiringShalah - **Interview breakthrough moments**: Specific scenarios where practice paid off - **Referral success stories**: Both sides - job seeker getting hired, referrer earning - **Career pivot narratives**: Non-tech to tech transitions  ### **2. Industry Intelligence Content** - **Hiring trends**: What's hot in tech hiring right now - **Company-specific insights**: Culture, interview process, what they actually want - **Salary negotiations**: Real numbers, strategies that work - **Market predictions**: Where tech hiring is heading  ### **3. Educational/How-To Content** - **Interview preparation frameworks**: Step-by-step guides - **Referral system explanations**: How it actually works - **LinkedIn optimization**: Getting noticed by recruiters - **Technical skills development**: What to focus on learning  ### **4. Behind-the-Scenes Content** - **Platform development updates**: New features, improvements - **Team insights**: Who's building HiringShalah and why - **Data revelations**: Interesting patterns from the platform - **Community highlights**: Celebrating user achievements  ## Strategic Content Framework  ### **The HIRE Framework** (Hook → Insight → Relate → Elevate)  #### **H - Hook (First 3 seconds)** Must immediately address job seeker pain or career aspiration: - \"Your resume isn't the problem...\" - \"I just saw something that will change how you think about interviews...\" - \"After helping 1000+ people get hired at FAANG...\"  #### **I - Insight (Value Delivery)** Provide specific, actionable knowledge: - Insider information about hiring processes - Data-driven strategies that work - Common mistakes and how to avoid them  #### **R - Relate (Emotional Connection)** Connect with universal job seeker experiences: - Interview anxiety and rejection pain - Imposter syndrome and self-doubt - Dreams of working at dream companies  #### **E - Elevate (Inspiration + Action)** End with hope and clear next steps: - Vision of their successful future - Specific action they can take today - Connection to HiringShalah's solution  ## Input Parameters Analysis  **Content Topic/Video Theme**: {{ $json.Idea || 'Topic not provided' }} **Target Audience Segment**: {{ $json.targetSegment || 'Job seekers (default)' }} **Campaign Focus**: {{ $json.campaignFocus || 'Brand awareness' }} **Content Format**: {{ $json.contentFormat || 'LinkedIn post' }} **Trending Industry Topic**: {{ $json.trendingTopic || 'Check HiringShalah.com for latest' }} **Video Asset Available**: {{ $json.videoAsset || 'Veo3 advertisement video' }} **Specific Company Focus**: {{ $json.companyFocus || 'General product companies' }} **Current Platform Events**: {{ $json.platformEvents || 'Fetch from hiringshalah.com' }} **User Success Stories**: {{ $json.successStories || 'Use platform data if available' }} **Referral Data Insights**: {{ $json.referralData || 'Platform performance metrics' }}  ## Advanced HiringShalah Content Strategies  ### **The Transformation Narrative:** ``` \"6 months ago, [relatable struggle]... Today, [specific success outcome]... Here's exactly what changed: [HiringShalah's role]... And here's how you can do it too: [clear action steps]\" ```  ### **The Insider Reveal:** ``` \"I just discovered something that will change how you think about [interview/referral process]... After [specific research/experience], here's what nobody talks about... This is why [common approach] fails... But here's what actually works: [HiringShalah advantage]\" ```  ### **The Data Story:** ``` \"I analyzed [specific number] of successful hires at [companies]... Here are the [number] patterns that surprised me... The biggest difference? [key insight] This is exactly what HiringShalah helps you achieve...\" ```  ## Content Creation Process  ### **Phase 1: HiringShalah Intelligence** 1. **Platform Research**: Check hiringshalah.com for latest features, events, success stories 2. **User Journey Mapping**: Understand current user experience and pain points 3. **Competitive Landscape**: What other platforms/services are users talking about 4. **Success Metrics**: Recent wins, user testimonials, platform growth data  ### **Phase 2: Story Development** 1. **Central Narrative**: What's the main story this content tells? 2. **User Perspective**: How does this help job seekers or referrers specifically? 3. **HiringShalah Integration**: Natural way to showcase platform value 4. **Emotional Arc**: Journey from problem to solution to success  ### **Phase 3: LinkedIn Optimization** 1. **Algorithm Elements**: Engagement triggers, optimal length, posting time 2. **Visual Integration**: How video asset supports the message 3. **Community Building**: Encouraging meaningful comments and shares 4. **Conversion Path**: Clear next steps toward HiringShalah engagement  Output should contain something like this:     \"content_idea \": {{ $json.Idea || 'content' }}\",   \"blog_post_idea\": \"Complete LinkedIn post content optimized for HiringShalah brand and audience. Must include: compelling hook addressing job seeker pain points, valuable insights about interviews/referrals/career growth, emotional connection with struggles and aspirations, clear value proposition of HiringShalah platform, natural integration of video content mention, specific call-to-action, and relevant hashtags. Content should feel authentic and valuable first, promotional second. Length: 1300-1600 characters for optimal LinkedIn performance.\",   \"content_strategy\": {     \"primary_emotion\": \"Main emotional response targeting (hope, validation, urgency, etc.)\",     \"audience_segment\": \"Job seekers, students, or working professionals\",     \"hiringshalah_angle\": \"How this content showcases platform value naturally\",     \"video_integration\": \"How the Veo3 video supports the written content\"   },   \"engagement_elements\": {     \"hook_type\": \"Question, story opening, controversial statement, or data reveal\",     \"comment_catalyst\": \"Specific question or prompt to drive comments\",     \"share_trigger\": \"Element that makes people want to share with their network\",     \"hashtag_strategy\": [\"#JobSearch\", \"#TechCareers\", \"#InterviewTips\", \"#HiringShalah\", \"#CareerGrowth\"]   },   \"performance_prediction\": {     \"viral_potential\": \"1-10 scale based on shareability and relevance\",     \"engagement_rate\": \"Expected likes, comments, shares\",     \"conversion_likelihood\": \"Probability of driving HiringShalah sign-ups or engagement\"   },   \"brand_integration\": {     \"platform_mention\": \"Natural way HiringShalah is referenced\",     \"value_proposition\": \"Core benefit highlighted\",     \"call_to_action\": \"Specific next step for audience\"   } }  Output should contiain everything as mentioned abhive type  ###Output (JSON only) ```json {   \"blog post : \"......\" } ``` ## Quality Standards for HiringShalah Content  ### **Content Must Always:** ✅ **Address Real Pain Points**: Speak to actual job seeker or career struggles ✅ **Provide Genuine Value**: Actionable insights even without using HiringShalah ✅ **Feel Authentically Human**: Not promotional or AI-generated sounding ✅ **Showcase Platform Naturally**: HiringShalah as solution, not as sales pitch ✅ **Drive Meaningful Engagement**: Encourage relevant career discussions ✅ **Align with Brand Mission**: Supporting career growth and interview success ✅ **Include Current Relevance**: Reference trends, news, or timely topics  ### **Content Must Never:** ❌ Sound like generic career advice that could apply to any platform ❌ Over-promise unrealistic outcomes or success timelines ❌ Ignore the dual-sided marketplace (both job seekers AND referrers) ❌ Forget about the video asset integration when mentioned ❌ Use insider jargon that excludes beginners or career changers  ## Success Metrics & Optimization  ### **Primary KPIs:** - **Engagement Rate**: Comments, likes, shares relative to reach - **Brand Mentions**: Organic mentions of HiringShalah in comments - **Website Traffic**: Clicks through to hiringshalah.com - **Sign-up Conversions**: New user registrations from content - **Community Growth**: New followers aligned with target audience  ### **Content Iteration Guidelines:** - **A/B test hooks**: Try different opening lines for similar topics - **Monitor comment sentiment**: Are responses positive and on-brand? - **Track conversion paths**: Which content types drive most sign-ups? - **Analyze share patterns**: What gets shared and by whom? - **Refine audience targeting**: Double down on highest-converting segments  ## Critical Reminders  - **Always research hiringshalah.com first** for latest platform updates and events - **Focus on transformation stories** - people love before/after narratives - **Balance education with inspiration** - teach AND motivate - **Remember the dual audience** - job seekers and potential referrers - **Integration over promotion** - HiringShalah as natural solution, not sales pitch - **Video asset is valuable** - mention the Veo3 content meaningfully - **Stay current with tech hiring trends** - this audience follows industry news closely  **Ultimate Goal**: Create content so valuable and engaging that people save it, share it, and remember HiringShalah as the platform that truly understands their career journey."
+            }
+          ]
+        }
+      },
+      "id": "5676c7ae-92e9-48e9-a086-23fa05b20954",
+      "name": "Marketing expert",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1216,
+        656
+      ],
+      "typeVersion": 1.5
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54ab5cfe-ca1f-4a29-b19d-9f00bf23ebd9",
+              "name": "=video_url",
+              "value": "={{ $json.webContentLink }}",
+              "type": "string"
+            },
+            {
+              "id": "40996ec6-a248-40f0-8ea4-ab0382650995",
+              "name": "Idea",
+              "value": "={{ $('Log the Idea').item.json.Idea }}",
+              "type": "string"
+            },
+            {
+              "id": "55ac6e57-d5ca-4724-9629-341c40f91887",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4660be48-190e-4286-9ca9-b830865276f3",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        656
+      ],
+      "id": "9527ca57-db9a-498b-994a-3e7e393503a1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Part 2: Prompt Generation\n",
+        "height": 240,
+        "width": 1320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "d5178d16-3695-4d48-965b-79eb0cd82ee1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-exp:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        400
+      ],
+      "id": "1a791970-8e38-48b9-a510-97edcefd60ab",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1HBQTykDvsrVuYmX",
+          "name": "OpenRouter account 4"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        608,
+        368
+      ],
+      "id": "e523d1c8-ba8e-43b7-acab-3fd9865c471a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jkRBTTKMDH8dJpFb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.URL }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        944
+      ],
+      "id": "678393c6-22ea-452a-a3e7-6c43df28490a",
+      "name": "Upload Video File",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35f657a5-deba-4009-b6ee-92fcb1645b95",
+              "name": "URL",
+              "value": "={{ $json.value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        976
+      ],
+      "id": "e4901ae9-269a-4e4e-80ce-98b17a8c51b3",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        944
+      ],
+      "id": "31234110-6ac4-4bea-8db0-271c1ef99e6a",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Log the Idea": {
+      "main": [
+        [
+          {
+            "node": "Prompts AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Prompts AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideas AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Log the Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompts AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Setting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setting": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-VEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Vertex AI-fetch": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex AI-VEO": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Video in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Video Upload": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get UserID6": {
+      "main": [
+        [
+          {
+            "node": "Register Video Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Get UserID6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Marketing expert",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marketing expert": {
+      "main": [
+        [
+          {
+            "node": "Log Final Video in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Marketing expert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Marketing expert",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Prompts AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video File": {
+      "main": [
+        [
+          {
+            "node": "Linkedin Video Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ad7bf541-2572-41e0-b179-da7d34e9b7b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27344b50b8f0df78999cf11dab38bfd8f18f4d025f4e70dc31e8b6299e3e4a17"
+  },
+  "id": "X9dqKjlisw3GW4FU",
+  "tags": [
+    {
+      "createdAt": "2025-08-02T16:54:41.292Z",
+      "updatedAt": "2025-08-02T16:54:41.292Z",
+      "id": "M5dxjA95lIRTtKmc",
+      "name": "youtube"
+    },
+    {
+      "createdAt": "2025-07-10T11:38:39.392Z",
+      "updatedAt": "2025-07-10T11:38:39.392Z",
+      "id": "rICQ269s5PzgRG0t",
+      "name": "HIRINGSHALAH"
+    }
+  ]
+}

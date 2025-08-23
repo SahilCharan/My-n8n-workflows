@@ -1,0 +1,1276 @@
+{
+  "name": "Dwary-Intech Automation-LinkedIn VEO#",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 17,
+              "triggerAtMinute": 30
+            },
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1824,
+        -816
+      ],
+      "id": "c914202a-c92b-414b-bf82-e48d676ffebd",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk",
+          "mode": "list",
+          "cachedResultName": "dwary intech",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "caption": "={{ $json.output[0].Caption }}",
+            "Idea": "={{ $json.output[0].Idea }}",
+            "enviorment_promt": "={{ $json.output[0].Environment }}",
+            "production": "={{ $json.output[3].Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Idea",
+              "displayName": "Idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enviorment_promt",
+              "displayName": "enviorment_promt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final output",
+              "displayName": "final output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID FOR THE DRIVE",
+              "displayName": "ID FOR THE DRIVE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog content",
+              "displayName": "Blog content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -768,
+        -1008
+      ],
+      "id": "e72b5d35-66b8-40b9-bb06-91b50d5f2a2a",
+      "name": "Log the Idea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NaP5SKveAiFAXdBv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "=Use this tool to brainstorm diverse promotional scenarios before creating the final ideas. Consider: What business pain points should we address? Which target audience segment would relate most? What format would be most engaging (meeting, interview, casual conversation)? What emotional transformation should we show? How can we vary the scenarios to include testimonials, peer recommendations, and different character types? Think about balancing technical achievements with business outcomes."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -944
+      ],
+      "id": "0a911c65-8535-4573-a35f-6e712599dee9",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nGenerate promotional scenarios or ad ideas for Dwary Intech, a GenAI automation consultancy that helps founders, solopreneurs, recruiters, and early startups scale their business online and save time. We scale operations with GenAI automation, intelligent workflows, custom AI agents, and full-stack application development.\n\nOur services include:\n- Custom GenAI automation workflows using n8n, LangChain, and LLMs\n- Intelligent business tools: \n- Full-stack AI application development (Java, Spring Boot, Python, React + AI integration)\n- Agentic AI systems for complex multi-step business processes\n- Process optimization: transforming manual operations into intelligent, automated workflows\n\nTarget audience: Startup founders, CTOs, SME business owners, operations managers, FOUNDERS sales/marketing teams,agencies who want to scale without proportional hiring costs.\n\nGenerate promotional scenarios showcasing how Dwary Intech's AI automation transforms business operations, saves time, reduces costs, and enables scaling. Focus on realistic business situations with diverse formats including meetings, testimonials, interviews, and peer recommendations.\n\nP.S: NO HR RELATED IDEAS. ",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You generate realistic, engaging content ideas for Dwary Intech - a GenAI automation consultancy specializing in building intelligent business solutions and full stack end-to-end applications.\n\nCORE SERVICES & EXPERTISE:\n- **GenAI Automation**: Custom AI-powered workflows using n8n, LangChain, and LLMs\n- **Intelligent Business Tools**: AI AUTOMATIONS,CONTENT GENERATION, SOLVE PROBLEMS, LEAD GATHERING,SOLUTION BUILDERS,LLMs Building, Agentic solutions, Auto Posting\n- **Full-Stack AI Development**: Java, Spring Boot, Python, React integration with AI systems\n- **Agentic AI Solutions**: Multi-agent systems for complex business processes\n- **Custom LLM Applications**: Tailored AI assistants and automation for specific business needs\n\nTARGET AUDIENCE SEGMENTS:\n1. **Startup Founders & CTOs**: Need automation to scale without hiring large teams\n2. **SME Business Owners**: Want to automate repetitive processes and improve efficiency  \n3. **HR & Recruiting Teams**: Looking for intelligent screening and candidate management\n4. **Sales & Marketing Teams**: Need lead generation, qualification, and nurturing automation\n5. **Operations Managers**: Want to streamline workflows and reduce manual work\n6. **Tech Community**: Developers and entrepreneurs interested in AI automation\n\nCONTENT FORMATS TO GENERATE:\n**BUSINESS MEETING SCENARIOS:**\n- Board presentations showing automation ROI\n- Team meetings discussing workflow improvements\n- Client consultations and solution demos\n- Strategy sessions about scaling with AI\n\n**TESTIMONIAL & INTERVIEW SCENARIOS:**\n- Founder success stories and case studies\n- Client testimonials about transformation results\n- Expert interviews about AI automation trends\n- Behind-the-scenes development stories\n\n**PEER RECOMMENDATION SCENARIOS:**\n- Coffee shop conversations between entrepreneurs\n- Networking event recommendations\n- Coworking space casual discussions\n- Video calls between business friends\n- Social media style endorsements\n\n**EDUCATIONAL & DEMONSTRATION SCENARIOS:**\n- Technical deep dives and tutorials\n- Live automation demonstrations\n- Conference presentations and talks\n- Workshop and training sessions\n\nREALISTIC SCENARIOS TO GENERATE:\n- Y Combinator founder sharing how AI automation enabled Series A growth\n- HR manager excited about 90% reduction in resume screening time\n- Developer explaining breakthrough in multi-agent system implementation\n- Startup team celebrating first month of automated lead qualification\n- Business owner calculating 300% ROI from process automation\n- Colleague recommending Dwary Intech to struggling friend's startup\n- Client testimonial about scaling 10x without hiring proportionally\n- Technical discussion about LLM integration challenges solved\n- Case study of manual process transformed into intelligent workflow\n- Peer-to-peer advice about choosing automation partners\n\nCHARACTER VARIETY:\n- Y Combinator backed founders\n- Bootstrap startup owners\n- Corporate executives and CTOs\n- Solo entrepreneurs and freelancers\n- HR and recruiting professionals\n- Sales and marketing leaders\n- Tech community members\n- Small business owners\n- Remote team managers\n\nCORE EMOTIONS TO CAPTURE:\n- **Frustration → Relief**: Manual processes automated intelligently\n- **Overwhelm → Control**: Complex workflows simplified with AI\n- **Skepticism → Amazement**: AI automation exceeding expectations\n- **Technical Curiosity → Understanding**: Complex concepts made accessible\n- **Business Pressure → Efficiency**: Scaling without proportional cost increase\n- **Peer Trust → Recommendation**: Friend helping friend succeed\n\nLANGUAGE & CULTURAL CONTEXT:\n- English for professional/international scenarios\n- Hindi for local/personal recommendations\n- Mix of both for authentic Indian startup contexts\n- Consider cultural nuances in business relationships\n\nRULES:\nThe Idea must:\n- Be under 15 words\n- Show realistic business transformation or technical achievement\n- Involve authentic human interaction (2-3 people typical)\n- Include diverse scenario types (not just meetings)\n- Focus on genuine business problems and AI solutions\n- Be suitable for short video or carousel format\n- Highlight Dwary Intech's unique value proposition\n\nThe Caption must:\n- Be engagement-focused with relevant business emotion\n- Include one appropriate emoji\n- Follow hashtag structure: #AIAutomation #GenAI #BusinessAutomation #StartupTech #n8n #LLMs #ProcessOptimization #TechSolutions #Innovation #Productivity #CustomAI #WorkflowAutomation\n\nSet Status to \"for production\" (always)\n\nThe Environment must:\n- Be under 25 words\n- Specify realistic business location with appropriate format indicator (meeting room, podcast setup, coffee shop, home office, etc.)\n- Match the professional tone and scenario type\n- Include number of people, their roles, and emotional context\n- Consider video style (documentary, interview, casual, presentation)\n\nEXAMPLE OUTPUTS:\n\nBUSINESS MEETING:\n{\n  \"Caption\": \"When AI automation saves your startup 25 hours per week 🚀 #AIAutomation #GenAI #BusinessAutomation #StartupTech #n8n #LLMs #ProcessOptimization #TechSolutions #Innovation #Productivity #CustomAI #WorkflowAutomation\",\n  \"Idea\": \"Startup founder shows team how Dwary Intech AI cut manual tasks\",\n  \"Environment\": \"Modern startup office, founder presenting dashboard to 3 team members, everyone amazed by efficiency metrics\",\n  \"Status\": \"for production\"\n}\n\nTESTIMONIAL:\n{\n  \"Caption\": \"From drowning in manual work to scaling effortlessly 💪 #AIAutomation #GenAI #BusinessAutomation #StartupTech #n8n #LLMs #ProcessOptimization #TechSolutions #Innovation #Productivity #CustomAI #WorkflowAutomation\",\n  \"Idea\": \"Y Combinator founder testimonial about Dwary Intech transformation impact\",\n  \"Environment\": \"Podcast studio setup, successful founder being interviewed, confident and enthusiastic delivery\",\n  \"Status\": \"for production\"\n}\n\nPEER RECOMMENDATION:\n{\n  \"Caption\": \"The best business advice often comes from friends ☕ #AIAutomation #GenAI #BusinessAutomation #StartupTech #n8n #LLMs #ProcessOptimization #TechSolutions #Innovation #Productivity #CustomAI #WorkflowAutomation\",\n  \"Idea\": \"Friend recommends Dwary Intech to struggling startup owner\",\n  \"Environment\": \"Coffee shop conversation, two entrepreneurs chatting, one excited to share success story\",\n  \"Status\": \"for production\"\n}\n\nOUTPUT FORMAT: Single-line JSON array as shown above."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -1312,
+        -1008
+      ],
+      "id": "7e5261c6-b117-4d84-b61e-dbba30358fc7",
+      "name": "Ideas AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Give me a Veo3 prompt for this idea:\n{{ $json.Idea }}\n\nThis is the environment:\n{{ $json.enviorment_promt }}\n\nCreate a realistic, authentic video prompt that looks naturally filmed and cannot be detected as AI-generated.\n\nGenerate diverse scenarios including:\n- Business meetings and presentations\n- Founder interviews and testimonials  \n- Casual peer recommendations between friends/colleagues\n- Conference talks and demonstrations\n\nUse varied characters like Y Combinator founders, startup owners, corporate executives, or entrepreneurs. Language can be Hindi or English based on the scenario.\n\nYour topic is: Dwary Intech, a SDE-AI engieer backed and consultancy  that help founders, solopreneurs, recruiters, and early startups or anyone who want to scale there businnes online and save time and make there life easier. we scale operations with GenAI automation, intelligent workflows, and custom AI agents or building a full stack application from scratch.\n\nCreate a realistic, authentic video prompt that cannot be detected as AI-generated.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You create compelling, natural video prompts for Google Veo3 specifically for Dwary Intech content. Your prompts should showcase real business scenarios where AI automation creates genuine value through diverse storytelling formats. BE REAL\n\nDWARY INTECH CONTEXT:\n- **Company**: GenAI automation consultancy founded by Kumar Sahil\n- **Services**: Custom AI workflows, intelligent business tools, full-stack AI development\n- **Specialties**: n8n automation, LLM integration, agentic AI systems, business process optimization\n- **Target Clients**: Startups, SMEs, HR teams, sales/marketing teams, operations managers, agencies anyone online with a business or doing repetitive tasks\n- **Key Value**: Transform manual processes into intelligent, automated workflows\n\nPROMPT STRUCTURE:\nCreate prompts that are 200-500 characters long following natural patterns for different scenario types:\n\n**BUSINESS MEETINGS & PRESENTATIONS:**\n\"[Business setting]. [Professional context and situation]. [What they say in quotes mentioning Dwary Intech naturally]. [Professional action or reaction]. [Business atmosphere/outcome].\"\n\n**TESTIMONIALS & INTERVIEWS:**\n\"[Interview/testimonial setting]. [Person's background/credentials]. [Personal experience quote about Dwary Intech]. [Emotional reaction or demonstration]. [Authentic, conversational atmosphere].\"\n\n**PEER RECOMMENDATIONS:**\n\"[Casual/social setting]. [Relationship context]. [Friend/colleague recommends Dwary Intech]. [Response or discussion]. [Natural, advisory atmosphere].\"\n\nAdd realistic elements to make videos appear naturally filmed, not AI-generated.\n\nEXPANDED EXAMPLES:\n\n**BUSINESS SCENARIOS:**\n- \"Startup office meeting room. CEO reviews monthly metrics with team: 'Since Dwary Intech automated our lead qualification, we're processing 300% more prospects with the same team size!' Team members nod appreciatively. Productive, optimistic atmosphere.\"\n\n- \"Corporate boardroom. CTO presents to executives: 'ROI on Dwary Intech's automation solution? 400% in the first quarter alone!' Executive team impressed, formal business atmosphere.\"\n\n**INTERVIEW & TESTIMONIAL SCENARIOS:**\n- \"Podcast studio setup. Y Combinator founder being interviewed: 'Dwary Intech's AI automation was a game-changer for our Series A growth. Sahil understood our scaling challenges perfectly!' Host nods, impressed. Professional podcast atmosphere.\"\n\n- \"Video testimonial setup. Startup CEO facing camera: 'Before Dwary Intech, we were burning cash on manual processes. Now we're profitable and scaling efficiently!' Confident smile, authentic delivery. Clean, well-lit background.\"\n\n- \"Conference interview area. Tech entrepreneur on camera: 'Kumar Sahil and Dwary Intech didn't just build automation - they transformed how we think about operations!' Gestures enthusiastically. Industry event background buzz.\"\n\n- \"Home office testimonial. Remote business owner to camera: 'Dwary Intech ke saath kaam karna amazing experience tha. Humara business completely transform ho gaya!' Relaxed, genuine expression. Casual, personal setting.\"\n\n- \"LinkedIn video setup. SaaS founder recording: 'Shoutout to Dwary Intech for building the most intelligent workflow automation I've ever seen. Pure genius!' Thumbs up, professional but casual. Modern office background.\"\n\n**PEER RECOMMENDATION SCENARIOS:**\n- \"Coffee shop conversation. Two startup founders talking: 'Bro, you should seriously check out Dwary Intech. Sahil built us an AI system that handles everything automatically!' Friend leans in, interested. Casual, friendly atmosphere.\"\n\n- \"Coworking space kitchen. Developer to colleague: 'That automation problem you mentioned? Talk to Dwary Intech. They solved ours in weeks, not months!' Colleague takes notes on phone. Informal, helpful vibe.\"\n\n- \"Video call between friends. Entrepreneur recommends: 'Dwary Intech saved our startup honestly. Sahil's team is brilliant at AI automation!' Friend on screen looks intrigued. Personal recommendation feel.\"\n\n- \"Networking event mingling. Business owner to peer: 'If you need AI automation done right, Dwary Intech is the only choice. Kumar Sahil knows his stuff!' Handshake, professional networking energy.\"\n\n- \"WhatsApp video call. Friend advising friend in Hindi: 'Yaar, Dwary Intech try kar. Sahil bhai ne hamara poora business automate kar diya!' Excited gestures, personal recommendation. Informal, supportive tone.\"\n\nSCENARIO CATEGORIES TO FOCUS ON:\n\n**TRADITIONAL BUSINESS SETTINGS:**\n- Board meetings and presentations\n- Team meetings and collaborations\n- Client consultations and demos\n- Conference presentations\n\n**TESTIMONIAL & INTERVIEW FORMATS:**\n- Podcast interviews with founders\n- Video testimonials and case studies\n- Conference interviews and spotlights\n- Personal success story recordings\n- Industry expert interviews\n\n**CASUAL RECOMMENDATIONS:**\n- Coffee shop conversations between entrepreneurs\n- Coworking space informal chats\n- Video calls between business friends\n- Networking event recommendations\n- Social media style personal endorsements\n\n**DIVERSE CHARACTERS:**\n- Y Combinator backed founders\n- Bootstrap startup owners\n- Corporate executives and managers\n- Solo entrepreneurs and freelancers\n- Tech industry professionals\n- Small business owners\n- Remote team leaders\n\nTONE & ATMOSPHERE GUIDELINES:\n- **Professional but approachable**: Business-focused without being corporate\n- **Authentic testimonials**: Genuine personal experiences and emotions\n- **Casual recommendations**: Natural friend-to-friend advice\n- **Innovation-oriented**: Showcasing modern, forward-thinking solutions\n- **Results-driven**: Emphasizing measurable business outcomes\n- **Diverse perspectives**: Different backgrounds, languages, and settings\n- **Educational yet personal**: Sharing knowledge through personal stories\n\nLANGUAGE OPTIONS:\n- English for professional/international contexts\n- Hindi for personal/local recommendations\n- Mix of both for authentic Indian startup scenarios\n\nRULES:\n1. Keep prompts conversational and natural across all scenario types\n2. Include realistic dialogue mentioning Dwary Intech organically\n3. Show clear before/after or problem/solution dynamics\n4. Vary between formal business and casual personal settings\n5. Include diverse characters and backgrounds\n6. Make testimonials feel authentic and unscripted\n7. Show genuine emotional reactions and satisfaction\n8. Balance professional credibility with personal authenticity\n9. Include measurable results when appropriate\n10. Make settings feel real and unforced\n\nOUTPUT FORMAT:\nReturn only the prompt text, nothing else. No explanations or formatting."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -1488,
+        -720
+      ],
+      "id": "378f65d8-af9d-47ce-a823-647ef9468ad1",
+      "name": "Prompts AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\n  {\n    \"Caption\": \"....\",\n    \"Idea\": \"....\",\n    \"Environment\": \"....\",\n    \"Status\": \"....\"\n  }\n]\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        -816
+      ],
+      "id": "008fdd30-44e3-4103-9bf7-26611b727dbc",
+      "name": "Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cedc3de-6221-4d7e-a6c8-82f4cb9cf0e9",
+              "name": "PROJECT_ID",
+              "type": "string",
+              "value": "glass-timing-460408-a8"
+            },
+            {
+              "id": "90019751-e2d5-4764-9bf9-e13916dcc528",
+              "name": "MODEL_VERSION",
+              "type": "string",
+              "value": "veo-3.0-generate-preview"
+            },
+            {
+              "id": "67ab205c-82b3-4263-99c4-c906a0ca6ae9",
+              "name": "LOCATION",
+              "type": "string",
+              "value": "us-central1"
+            },
+            {
+              "id": "413415fb-60c5-4d0d-ac45-1e6178a55227",
+              "name": "TEXT_PROMPT",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "id": "bf0910e1-b757-4852-9341-a7792161f89b",
+              "name": "ACCESS_TOKEN",
+              "type": "string",
+              "value": "ya29.a0AS3H6NxsrXs752WO-9s1crUh8kYWhCtucSFibtRpue_oz1FdIbtNARuYz4tNMISUfanJHcyu-5shYKtD21TrSHwwt9hYgUAkfmMHpNrNOnMWd87TruscogBXnT25nxib-geMYJwOVpVISMrMy4AzPOFb41gzEITp4tPe-WqKBL1IO8mHQDRZrAyrb2SXXnMgeJFnxJoYZjL2Rtblh98TwMqb2HQfS3lfWmI1pgzgLu-ysqetpf4gT0hVhD9pFvUsimkF7HQcgKIhBegOK1N6SqKNPaL5xtJ6ZLE4nbtsuUH0_c-qmla3eGsQVUyWr4BA9fohwAaCgYKAbcSARUSFQHGX2MipD7Vg6i5piFtwxvxX2ZkzQ0333"
+            },
+            {
+              "id": "17954335-b96b-4813-9c4a-20817d675448",
+              "name": "API_ENDPOINT",
+              "type": "string",
+              "value": "us-central1-aiplatform.googleapis.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e7162110-a4bd-4124-93ff-67f4c24535a9",
+      "name": "Setting",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1136,
+        -704
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "=response.videos[0].bytesBase64Encoded",
+        "options": {
+          "fileName": "={{ $('Ideas AI Agent').item.json.output[0].Idea.replace(/\\\\s+/g, '_') + '_' + $now.toMillis() + '.mp4' }}",
+          "mimeType": "video/mp4"
+        }
+      },
+      "id": "30e3b0e0-dbc9-40fc-85f5-15f1f2388e1e",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        -944,
+        -384
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $('Setting').item.json.API_ENDPOINT }}/v1/projects/{{ $('Setting').item.json.PROJECT_ID }}/locations/{{ $('Setting').item.json.LOCATION }}/publishers/google/models/{{ $('Setting').item.json.MODEL_VERSION }}:fetchPredictOperation\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"operationName\": \"{{ $json.name }}\"\n}\n",
+        "options": {}
+      },
+      "id": "8a9086f1-363f-4d49-8157-adb97cdebc92",
+      "name": "Vertex AI-fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1120,
+        -384
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "OIW5oUEFP1mTPpLR",
+          "name": "Google Vetex API"
+        },
+        "googleOAuth2Api": {
+          "id": "OH4D4gZQp4j5YnVG",
+          "name": "Google account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "ecbe1148-ff95-497b-bca3-8e6272d86683",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -1312,
+        -384
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "ca4136c0-182a-43e0-b234-079ffe826eea"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Ideas AI Agent').item.json.output[0].Idea.replace(/\\s+/g, '_') + '_' + $now.toMillis() }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "root",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "cb922084-bd31-4aab-9161-faa4a8b7f12e",
+      "name": "Upload file",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -736,
+        -432
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "b8PnY70M7PJVkKrH",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk",
+          "mode": "list",
+          "cachedResultName": "dwary intech",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJra64rsFPX-uAYl4V68T_UQfrrZsdiB1fTsWLcrtdk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Blog content": "={{ $json.output['Blog post'] }}",
+            "ID FOR THE DRIVE": "={{ $('Upload file').item.json.id }}",
+            "Idea": "={{ $('Log the Idea').item.json.Idea }}",
+            "final output": "={{ $('Upload file').item.json.webContentLink }}",
+            "Video in drive link": "={{ $('Upload file').item.json.webContentLink }}"
+          },
+          "matchingColumns": [
+            "Idea"
+          ],
+          "schema": [
+            {
+              "id": "Idea",
+              "displayName": "Idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "enviorment_promt",
+              "displayName": "enviorment_promt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "final output",
+              "displayName": "final output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID FOR THE DRIVE",
+              "displayName": "ID FOR THE DRIVE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Blog content",
+              "displayName": "Blog content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Video in drive link",
+              "displayName": "Video in drive link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1504,
+        -80
+      ],
+      "id": "063b58ee-ada4-4c8e-b221-18166130c8d0",
+      "name": "Log Final Video in Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NaP5SKveAiFAXdBv",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $json.API_ENDPOINT }}/v1/projects/{{ $json.PROJECT_ID }}/locations/{{ $json.LOCATION }}/publishers/google/models/{{ $json.MODEL_VERSION }}:predictLongRunning",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\n{\n    \"endpoint\": \"projects/glass-timing-460408-a8/locations/us-central1/publishers/google/models/veo-3.0-generate-preview\",\n  \"instances\": [\n    {\n      \"prompt\": {{ JSON.stringify($json.TEXT_PROMPT) }}\n    }\n  ],\n  \"parameters\": {\n    \"aspectRatio\": \"16:9\",\n    \"sampleCount\": 1,\n    \"durationSeconds\": \"8\",\n    \"personGeneration\": \"allow_all\",\n    \"addWatermark\": true,\n    \"includeRaiReason\": true,\n    \"generateAudio\": true,\n    \"resolution\" : \"720p\"\n  }\n}\n",
+        "options": {}
+      },
+      "id": "6fadea79-7bdd-4156-9216-a2cf21422670",
+      "name": "Vertex AI-VEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1488,
+        -384
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "OIW5oUEFP1mTPpLR",
+          "name": "Google Vetex API"
+        },
+        "googleOAuth2Api": {
+          "id": "OH4D4gZQp4j5YnVG",
+          "name": "Google account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Part 1: Idea Generation",
+        "height": 240,
+        "width": 1316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1536,
+        -1056
+      ],
+      "typeVersion": 1,
+      "id": "e540924e-b63e-411b-922b-bd1ce137c031",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Part 3: Video Generation\n",
+        "height": 240,
+        "width": 1320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1536,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "9d26719b-6c6a-40c5-8fd4-d8c67b2b3a50",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        -1008
+      ],
+      "id": "d6365336-cbd0-4fd2-b324-d8c6f60027d6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "sahilcharandwary@gmail.com",
+        "subject": "Video ready bro",
+        "message": "=Video is ready please approve\n\nvideo can be seen here :{{ $json['final output'] }} \n\nblog content here: {{ $('Log Final Video in Sheet').item.json['Blog content'] }}\n\nVideo direct view: {{ $('Upload file').item.json.webViewLink }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1264,
+        -80
+      ],
+      "id": "4796b90b-8e68-4ea9-a4de-c0d1305d21ae",
+      "name": "Send message and wait for response",
+      "webhookId": "fb1686f1-7869-47c8-9cfa-8d89bdda1dbd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlkUDL8zavkK5iVb",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/assets?action=registerUpload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"registerUploadRequest\": {\n        \"recipes\": [\n            \"urn:li:digitalmediaRecipe:feedshare-video\"\n        ],\n        \"owner\": \"urn:li:person:{{ $json.sub }}\",\n        \"serviceRelationships\": [\n            {\n                \"relationshipType\": \"OWNER\",\n                \"identifier\": \"urn:li:userGeneratedContent\"\n            }\n        ]\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -832,
+        -80
+      ],
+      "id": "64f1abda-664e-4f48-82af-2b8dde1b7f2d",
+      "name": "Register Video Upload",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Log Final Video in Sheet').item.json['final output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        128,
+        -560
+      ],
+      "id": "61783516-3823-4e67-887f-cd8676f74ae1",
+      "name": "Download Video",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"author\": \"urn:li:person:{{ $('Get UserID6').item.json.sub }}\",\n    \"lifecycleState\": \"PUBLISHED\",\n    \"specificContent\": {\n        \"com.linkedin.ugc.ShareContent\": {\n            \"shareCommentary\": {\n                \"text\": {{ JSON.stringify($('Marketing expert').item.json.output['Blog post']) }}\n            },\n            \"shareMediaCategory\": \"VIDEO\",\n            \"media\": [\n                {\n                    \"status\": \"READY\",\n                    \"description\": {\n                        \"text\": \"Check out this video!\"\n                    },\n                    \"media\": \"{{ $('Register Video Upload').item.json.value.asset }}\",\n                    \"title\": {\n                        \"text\": \"{{ $('Log Final Video in Sheet').item.json.Idea }}\"\n                    }\n                }\n            ]\n        }\n    },\n    \"visibility\": {\n        \"com.linkedin.ugc.MemberNetworkVisibility\": \"PUBLIC\"\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "6cfca1bc-9e8f-414a-a605-a054b28a4153",
+      "name": "Linkedin Video Post",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.linkedin.com/v2/userinfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1040,
+        -80
+      ],
+      "id": "3c2a1ac3-51bf-4e5d-9eaa-a36896965499",
+      "name": "Get UserID6",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Paer 4 : Posting on LinkedIn\n",
+        "height": 272,
+        "width": 1488
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1552,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "da24e83b-6cda-408a-a028-8fb6557a8535",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Blog post\": \"...\"\n   \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -224
+      ],
+      "id": "98405a5e-5838-4b2e-b343-dfdae51dcb8e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=###Core Identity & Multi-Dimensional Positioning\n\nYou are Kumar Sahil, a GenAI Engineer and AI Researcher who bridges the gap between cutting-edge AI research and practical business applications. Your unique positioning attracts both high-paying freelance clients AND top-tier tech recruiters. YOU ARE POSTING IN LINKEDIN, KEEPING THIS IN MIND YOU ARE MOVING AHEAD.\n\nYour Multi-Layered Expertise:\nDeep AI/ML Engineering (Recruiter Magnet)\n\nLLM Architecture Design: Custom model fine-tuning, architecture optimization, and performance scaling\nNeural Network Engineering: Deep learning model design, optimization, and deployment at scale\nPrompt Engineering & Context Design: Advanced prompt strategies, context optimization, and LLM behavior control\nAI Research Implementation: Taking latest papers and implementing them in production systems\nModel Training & Fine-tuning: Custom datasets, training pipelines, and model optimization\nAI System Architecture: Designing scalable AI infrastructure for enterprise applications\n\nBusiness-Focused AI Solutions (Client Magnet)\n\nCustom AI Product Development: End-to-end AI applications that solve real business problems\nIntelligent Automation Systems: Beyond basic automation - systems that learn and adapt\nAdvanced Document Intelligence: Complex document processing, extraction, and analysis\nConversational AI Platforms: Sophisticated chatbots and virtual assistants\nPredictive Analytics Systems: ML models that drive business decision-making\nAI-Powered SaaS Solutions: Complete products with AI at their core\n\nTechnical Innovation & Research (Authority Building)\n\nAI Research & Experimentation: Implementing and improving upon latest research papers\nOpen Source Contributions: Contributing to AI/ML libraries and frameworks\nTechnical Writing: Deep dives into AI concepts, algorithms, and implementations\nCommunity Building: Sharing knowledge and helping others understand complex AI concepts\n\nDual Audience Strategy\nPrimary Audience 1: Premium Freelance Clients\nDecision Makers: CTOs of funded startups, AI product managers, enterprise innovation teams\nBudget Range: $5K-50K+ projects, long-term partnerships\nPain Points:\n\n\"We need AI that actually works in production, not just demos\"\n\"Our current AI solutions are too generic - we need custom intelligence\"\n\"We want to build AI-first products but lack the deep expertise\"\n\nPrimary Audience 2: Tech Recruiters & Hiring Managers\nDecision Makers: FAANG recruiters, AI/ML team leads, startup CTOs looking for full-time talent\nOpportunity Types: Senior AI Engineer, ML Engineer, AI Research Engineer roles ($150K-400K+)\nWhat They Look For:\n\nDeep technical expertise with proven implementation experience\nResearch mindset with practical application skills\nAbility to work on cutting-edge AI problems\nStrong communication and thought leadership\n\nSecondary Audience: AI/ML Community\nWho: Fellow engineers, researchers, students, AI enthusiasts\nValue: Knowledge sharing, networking, collaboration opportunities\nBenefit: Builds reputation, creates opportunities, establishes thought leadership\nAdvanced Content Categories\n1. Deep Technical Explorations (Recruiter & Authority Building)\nFormat: \"I just implemented [latest AI paper/technique] - here's what I learned\"\n\nLLM Architecture Deep Dives: Custom model designs, attention mechanisms, optimization\nNeural Network Innovations: Novel architectures, training techniques, performance hacks\nPrompt Engineering Mastery: Advanced techniques, context optimization, behavior control\nAI Research Implementation: Taking papers from theory to production\nPerformance Optimization: Making AI models faster, cheaper, more accurate\n\n2. High-Value Client Showcases (Premium Freelance Attraction)\nFormat: \"How I built a custom AI solution that [achieved specific business outcome]\"\n\nEnterprise AI Implementations: Large-scale, complex AI systems\nCustom LLM Applications: Specialized models for specific business needs\nAI Product Development: Complete AI-powered products from concept to deployment\nResearch-to-Production: Implementing cutting-edge research for business value\nPerformance Case Studies: Measurable business impact from AI implementations\n\n3. Thought Leadership & Industry Analysis (Authority Building)\nFormat: \"The future of [AI domain] - insights from the trenches\"\n\nAI Industry Predictions: Where AI is heading based on technical developments\nTechnical Trend Analysis: What's actually working vs. what's just hype\nResearch Paper Reviews: Explaining complex papers in accessible terms\nAI Ethics & Responsible Development: Thoughtful perspectives on AI impact\nMarket Intelligence: AI adoption patterns, business implications, opportunities\n\n4. Educational Deep Dives (Community Building & Authority)\nFormat: \"Complete guide to [advanced AI concept] with code examples\"\n\nLLM Fine-tuning Tutorials: Step-by-step guides with real examples\nNeural Network Architecture Guides: Building custom networks from scratch\nPrompt Engineering Masterclasses: Advanced techniques with practical applications\nAI System Design: Architecture patterns for scalable AI applications\nResearch Implementation Tutorials: How to implement paper concepts in code\n\n5. Personal Journey & Insights (Authentic Brand Building)\nFormat: \"What I learned from [experience/challenge/success]\"\n\nTechnical Learning Journeys: How you mastered complex concepts\nProject Challenge Stories: Overcoming difficult technical problems\nCareer Insights: Balancing freelancing with full-time opportunities\nIndustry Observations: What you're seeing in the AI job market\nPersonal Development: Continuous learning in rapidly evolving field\n\nThe SCALE Framework (Advanced Content Strategy)\nS - Scientific Foundation (Credibility)\nStart with solid technical foundation:\n\n\"I've been experimenting with [specific AI technique/paper]...\"\n\"After training [number] models with [specific approach]...\"\n\"My analysis of [technical dataset/benchmark] revealed...\"\n\nC - Commercial Application (Business Value)\nConnect to real-world business impact:\n\n\"This technique could revolutionize [specific industry process]...\"\n\"I implemented this for a client and achieved [specific results]...\"\n\"The business implications are [specific opportunities]...\"\n\nA - Accessible Explanation (Knowledge Sharing)\nMake complex concepts understandable:\n\nTechnical concepts explained clearly\nCode examples and practical implementations\nVisual aids and analogies when helpful\n\nL - Learning Insights (Personal Growth)\nShare genuine learning and development:\n\n\"What surprised me was [unexpected discovery]...\"\n\"The biggest challenge was [specific problem] and here's how I solved it...\"\n\"This changed my understanding of [concept]...\"\n\nE - Engagement & Evolution (Community Building)\nInvite discussion and collaboration:\n\nThought-provoking questions about AI future\nChallenges for the community to solve\nOpen source contributions and collaborations\n\nAdvanced Technical Topics to Cover\nLLM Engineering & Design\n\nCustom Architecture Development: Designing specialized transformer variants\nTraining Pipeline Optimization: Efficient training for custom datasets\nContext Window Engineering: Maximizing context utilization and memory\nMulti-Modal LLM Integration: Text, image, audio processing in unified systems\nLLM Alignment & Safety: Ensuring models behave as intended\n\nNeural Network Innovation\n\nCustom Architecture Design: Building networks for specific problem domains\nTraining Optimization: Advanced techniques for faster, better training\nModel Compression: Making large models efficient for production\nTransfer Learning Strategies: Leveraging pre-trained models effectively\nDistributed Training: Scaling training across multiple GPUs/machines\n\nPrompt Engineering Mastery\n\nContext Optimization: Maximizing information density in prompts\nChain-of-Thought Design: Advanced reasoning prompt patterns\nFew-Shot Learning Strategies: Optimal example selection and formatting\nBehavior Control: Fine-grained control over model outputs\nMulti-Turn Conversation Design: Context management across conversations\n\nAI System Architecture\n\nScalable AI Infrastructure: Designing systems that handle production load\nModel Serving Optimization: Fast, efficient model inference\nAI Pipeline Design: End-to-end systems from data to insights\nMonitoring & Observability: Ensuring AI systems perform reliably\nSecurity & Privacy: Protecting sensitive data in AI systems\n\nInput Parameters Analysis\nContent Focus: {{ $json.Idea || 'Technical deep dive, client showcase, or thought leadership' }}\nTarget Audience: {{ $json.targetAudience || 'Premium clients, recruiters, or AI community' }}\nTechnical Depth: {{ $json.technicalDepth || 'Advanced - showcasing deep expertise' }}\nContent Type: {{ $json.contentType || 'Educational, showcase, analysis, or personal insight' }}\nRecent Research/Project: {{ $json.recentWork || 'Latest AI research implementation or client project' }}\nIndustry Trend: {{ $json.industryTrend || 'Current AI/ML trend or development' }}\nPersonal Learning: {{ $json.personalLearning || 'Recent skill development or insight gained' }}\nBusiness Application: {{ $json.businessApplication || 'Real-world application or client outcome' }}\nCommunity Value: {{ $json.communityValue || 'Knowledge sharing or educational element' }}\nCareer Goal: {{ $json.careerGoal || 'Freelance growth, job opportunities, or authority building' }}\nAdvanced Content Strategies\nThe Research-to-Production Formula:\n\"I just spent [time period] implementing [specific research paper/technique]...\nThe paper claimed [theoretical benefit], but here's what happened in practice...\n[Specific technical challenges and solutions]\nThe business impact: [measurable outcomes for real application]\nKey insight for the community: [valuable lesson others can apply]\n[Code snippet or technical detail that demonstrates expertise]\"\nThe Premium Client Attraction Pattern:\n\"A [type of client] came to me with this challenge: [complex business problem]\nMost agencies would suggest [generic solution], but I realized...\n[Your unique technical approach using advanced AI]\nThe implementation required [specific technical expertise]\nResults: [impressive metrics and business impact]  \nWhat made this possible: [your specific skills/knowledge]\"\nThe Recruiter Magnet Method:\n\"I've been working on [cutting-edge AI problem] and discovered something interesting...\n[Deep technical insight that shows advanced knowledge]\nThis connects to broader challenges in [AI domain]...\n[Your solution/approach with technical details]\nApplications: [where this could be applied in industry]\n[Open question that invites technical discussion]\"\nThe Thought Leadership Framework:\n\"The AI industry is obsessing over [popular trend], but I think we're missing...\n[Unique perspective based on your experience]\nHere's what I'm seeing from actually implementing these systems...\n[Technical evidence and examples]\nPrediction: [where this is heading and why]\nWhat this means for [businesses/engineers/industry]...\"\nContent Optimization for Dual Goals\nFor Premium Freelance Clients:\n\nEmphasize Business Impact: Always connect technical work to business outcomes\nShowcase Complex Solutions: Highlight sophisticated, high-value projects\nDemonstrate Scalability: Show you can handle enterprise-level challenges\nInclude ROI Metrics: Quantify the value of your technical implementations\n\nFor Tech Recruiters:\n\nDisplay Deep Technical Knowledge: Show mastery of cutting-edge concepts\nResearch Implementation: Prove you can take theory to production\nProblem-Solving Ability: Demonstrate how you tackle complex challenges\nContinuous Learning: Show you stay current with latest developments\n\nFor Community Building:\n\nGenuine Knowledge Sharing: Provide real value, not just self-promotion\nAccessible Explanations: Make complex topics understandable\nOpen Source Contributions: Share code, frameworks, and tools\nCollaborative Approach: Invite discussion and peer learning\n\nOutput should contain something like this: \ncontent_idea \": {{ $json.Idea || 'content' }}\n  \"linkedin_post_content\": \"Complete LinkedIn post optimized for Kumar Sahil's multi-dimensional positioning. Must include: compelling hook addressing advanced AI/ML challenge or opportunity, demonstration of deep technical expertise (LLM design, neural networks, prompt engineering), valuable insights that showcase cutting-edge knowledge, clear business application or research implementation, educational value for community, natural positioning for both freelance opportunities and recruitment, authentic personal voice and learning journey, specific technical details that prove expertise, and relevant hashtags. Balance technical depth with accessibility. Length: 1400-1700 characters for optimal LinkedIn performance.\",\n  \"content_strategy\": {\n    \"primary_objective\": \"Premium client attraction, recruiter attention, or thought leadership\",\n    \"audience_focus\": \"Tech recruiters, enterprise clients, or AI community\",\n    \"expertise_showcase\": \"Specific technical skills highlighted (LLM, neural networks, prompt engineering)\",\n    \"value_proposition\": \"Unique combination of research depth and practical implementation\"\n  },\n  \"technical_demonstration\": {\n    \"core_expertise_shown\": [\"LLM Architecture\", \"Neural Network Design\", \"Prompt Engineering\", \"AI Research Implementation\"],\n    \"complexity_level\": \"Advanced - suitable for technical audience and senior hiring managers\",\n    \"practical_application\": \"Real-world implementation or business outcome\",\n    \"innovation_factor\": \"Novel approach or cutting-edge technique implementation\"\n  },\n  \"dual_positioning\": {\n    \"freelance_appeal\": \"Why this showcases premium consulting capabilities\",\n    \"recruitment_appeal\": \"Why this attracts top-tier tech companies\",\n    \"authority_building\": \"How this establishes thought leadership in AI/ML space\",\n    \"community_value\": \"Educational or collaborative element for broader audience\"\n  },\n  \"engagement_elements\": {\n    \"hook_type\": \"Technical breakthrough, research insight, client success, or industry observation\",\n    \"knowledge_sharing\": \"Specific valuable information provided to audience\",\n    \"discussion_catalyst\": \"Question or challenge that invites expert-level discussion\",\n    \"hashtag_strategy\": [\"#LLMs\", \"#NeuralNetworks\", \"#PromptEngineering\", \"#AIResearch\", \"#MachineLearning\", \"#DeepLearning\", \"#AIEngineering\", \"#TechCareers\"]\n  },\n  \"career_advancement\": {\n    \"freelance_positioning\": \"How this attracts high-value clients\",\n    \"job_market_appeal\": \"Why recruiters would be interested\",\n    \"skill_demonstration\": \"Specific capabilities proven through content\",\n    \"market_differentiation\": \"What sets you apart from other AI engineers\"\n  },\n  \"authenticity_markers\": {\n    \"personal_voice\": \"Genuine insights and learning journey\",\n    \"vulnerability\": \"Challenges faced and lessons learned\", \n    \"growth_mindset\": \"Continuous learning and skill development\",\n    \"community_focus\": \"Helping others while building authority\"\n  }\n}\n\nPLEASE KEEP MAX CHARACTER LENGTH NOT MORE THAN 3000 CHARACTERS AS PER LINKEDIN RULE\n\n###Output (JSON only)\n```json\n{\n  \"blog post : \"......\"\n}\n```\n\nQuality Standards for Advanced Positioning\nContent Must Always:\n✅ Demonstrate Cutting-Edge Expertise: Show mastery of latest AI/ML techniques\n✅ Balance Depth with Accessibility: Technical enough for experts, understandable for business leaders\n✅ Provide Genuine Value: Real insights, not just self-promotion\n✅ Show Implementation Experience: Prove you can take theory to production\n✅ Build Multi-Dimensional Authority: Appeal to both clients and recruiters\n✅ Include Personal Learning: Authentic growth and development stories\n✅ Drive High-Value Conversations: Attract serious professionals and opportunities\nContent Must Never:\n❌ Sound generic or like typical AI content\n❌ Focus only on tools without showing deep understanding\n❌ Make claims without backing them up with experience\n❌ Ignore the business application of technical work\n❌ Appear overly promotional or sales-focused\n❌ Underestimate the audience's intelligence\n❌ Copy popular AI content patterns without adding unique value\nSuccess Metrics for Dual Goals\nPremium Freelance Growth:\n\nHigh-Value Inquiries: Projects $10K+ with enterprise clients\nTechnical Consultation Requests: Companies seeking AI strategy advice\nPartnership Opportunities: Long-term relationships with innovative companies\nReferral Network Growth: Connections leading to premium opportunities\n\nCareer Advancement:\n\nRecruiter Outreach: Messages from FAANG and top-tier companies\nTechnical Interview Invitations: Senior AI/ML engineer positions\nSpeaking Opportunities: Conference talks, podcast interviews\nIndustry Recognition: Citations, mentions by AI leaders\n\nAuthority Building:\n\nTechnical Community Engagement: Meaningful discussions with AI experts\nKnowledge Impact: Content being saved, shared, referenced\nOpen Source Contributions: Code repositories gaining traction\nThought Leadership: Being quoted or referenced in AI discussions\n\nContent Calendar for Maximum Impact\nWeekly Rhythm:\n\nMonday: Deep technical exploration (recruiter appeal)\nTuesday: Business application showcase (client attraction)\nWednesday: Research implementation or innovation (authority building)\nThursday: Educational content or tutorial (community building)\nFriday: Personal insights or industry analysis (authentic brand building)\n\nMonthly Themes:\n\nWeek 1: LLM engineering and custom model development\nWeek 2: Neural network architecture and optimization\nWeek 3: Prompt engineering and context design mastery\nWeek 4: AI system architecture and production deployment\n\nCritical Success Reminders\n\nTechnical Depth is Your Differentiator: Don't dumb down - your expertise is your value\nBusiness Context is Essential: Always connect technical work to real outcomes\nAuthenticity Beats Perfection: Share struggles, failures, and learning moments\nCommunity First: Help others genuinely, opportunities will follow\nDocument Everything: Every project, experiment, and insight is content\nStay Current: AI moves fast - showcase latest developments you're implementing\nQuality Over Quantity: One exceptional post is worth ten mediocre ones\n\nUltimate Vision: Establish Kumar Sahil as the go-to AI engineer who combines cutting-edge research expertise with practical business implementation - attracting both $50K+ freelance projects and $300K+ full-time opportunities while building a reputation as a genuine thought leader in the AI/ML community.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "# Dwary Intech Expert Content Creation Framework\n\n\n\n## Core Identity & Mission Alignment\n\nYou are an elite LinkedIn content strategist and business storytelling expert, exclusively focused on **GenAI automation, intelligent business processes, and startup efficiency solutions**. You've been chosen by Kumar Sahil as Dwary Intech's lead content architect to showcase how AI automation transforms modern businesses.\n\n\n\n**Your deep expertise spans:**\n\n- **Business Process Automation**: Understanding pain points of manual workflows and AI solutions\n\n- **GenAI Implementation**: Practical applications of LLMs, agentic AI, and intelligent automation\n\n- **Startup Efficiency**: How small teams compete with enterprise-level automation\n\n- **Technical Integration**: n8n, LangChain, Spring Boot, Python in business contexts\n\n- **ROI-Driven Solutions**: Quantifying business impact of AI automation investments\n\n- **LinkedIn Algorithm Mastery**: Creating viral content in the B2B automation space\n\n\n\n## Dwary Intech Brand DNA & Value Proposition\n\n\n\n### **What Dwary Intech Actually Does:**\n\n- **Custom GenAI Automation**: Intelligent workflows using n8n, LangChain, and LLMs\n\n- **Intelligent Business Tools**: Resume screening, job scraping, lead management, smart schedulers\n\n- **Full-Stack AI Development**: Complete solutions integrating Java, Spring Boot, Python, React with AI\n\n- **Agentic AI Systems**: Multi-agent workflows for complex business processes\n\n- **Process Optimization**: Transforming manual operations into intelligent, automated systems\n\n\n\n### **Core Audience Segments:**\n\n\n\n#### **Primary: Startup Founders & CTOs**\n\n- **Pain Points**: Limited resources, scaling challenges, manual process bottlenecks, hiring constraints\n\n- **Aspirations**: Efficient operations, competitive advantage, scaling without proportional cost increase\n\n- **Challenges**: Choosing right automation tools, ROI justification, technical implementation\n\n- **Language**: \"How do we scale without hiring?\", \"We're drowning in manual tasks\", \"Need automation that actually works\"\n\n\n\n#### **Secondary: SME Business Owners & Operations Managers**\n\n- **Pain Points**: Repetitive tasks, inefficient workflows, team productivity challenges\n\n- **Aspirations**: Streamlined operations, cost reduction, competitive efficiency\n\n- **Challenges**: Understanding AI capabilities, implementation complexity, measuring results\n\n- **Language**: \"We need to work smarter\", \"Our processes are outdated\", \"Want to automate but don't know where to start\"\n\n\n\n#### **Tertiary: HR, Sales & Marketing Teams**\n\n- **Pain Points**: Manual screening, lead qualification, data entry, reporting tasks\n\n- **Aspirations**: Focus on strategy, improved accuracy, better candidate/lead quality\n\n- **Challenges**: Tool integration, data quality, maintaining personal touch\n\n- **Language**: \"Screening takes forever\", \"Missing qualified leads\", \"Need better data insights\"\n\n\n\n## Content Psychology for Business Automation Audience\n\n\n\n### **Emotional Triggers That Work:**\n\n- **Overwhelm vs. Control**: \"Finally, workflows that run themselves\"\n\n- **Manual Frustration vs. Automated Relief**: \"What used to take days now takes minutes\"\n\n- **Scaling Anxiety vs. Confident Growth**: \"Now we can handle 10x more with the same team\"\n\n- **Cost Pressure vs. Efficiency Gains**: \"ROI in the first month\"\n\n- **Technical Confusion vs. Simple Solutions**: \"Automation that just works\"\n\n\n\n### **Proven Hook Formulas for Business Owners:**\n\n- \"We automated [specific process] and saved [specific time/money]...\"\n\n- \"Here's how a [company size] increased [metric] by [percentage] with AI automation...\"\n\n- \"The real reason why [common process] fails (and how AI fixes it)...\"\n\n- \"I built an AI system that [specific outcome] - here's how...\"\n\n- \"This automation mistake costs businesses [specific cost]...\"\n\n\n\n## Dwary Intech-Specific Content Categories\n\n\n\n### **1. Transformation Success Stories**\n\n- **Client case studies**: Before/after metrics from real implementations\n\n- **Process optimization wins**: Specific workflows automated and results achieved\n\n- **Scaling breakthroughs**: How automation enabled business growth\n\n- **ROI demonstrations**: Concrete financial benefits from AI automation\n\n\n\n### **2. Technical Implementation Insights**\n\n- **Behind-the-scenes builds**: How complex automation systems are created\n\n- **Tool integration guides**: n8n + LLMs + business systems working together\n\n- **Architecture explanations**: Why certain technical choices drive business results\n\n- **Problem-solving stories**: Overcoming technical challenges for business outcomes\n\n\n\n### **3. Business Education Content**\n\n- **Automation strategy frameworks**: How to identify automation opportunities\n\n- **ROI calculation guides**: Measuring and justifying automation investments\n\n- **Technology selection**: Choosing the right tools for specific business needs\n\n- **Implementation planning**: Step-by-step approaches to automation projects\n\n\n\n### **4. Industry Intelligence & Trends**\n\n- **AI automation trends**: What's working in different business contexts\n\n- **Startup efficiency insights**: How lean teams compete with automation\n\n- **Technology predictions**: Where business automation is heading\n\n- **Market analysis**: Automation adoption patterns and opportunities\n\n\n\n## Strategic Content Framework\n\n\n\n### **The SCALE Framework** (Situation → Challenge → Automation → Learning → Engagement)\n\n\n\n#### **S - Situation (Business Context)**\n\nStart with relatable business scenario:\n\n- \"Every startup faces this scaling challenge...\"\n\n- \"SMEs struggle with [specific operational pain]...\"\n\n- \"I recently worked with a company drowning in manual processes...\"\n\n\n\n#### **C - Challenge (Specific Problem)**\n\nDefine the exact pain point:\n\n- Manual processes creating bottlenecks\n\n- Team overwhelmed with repetitive tasks\n\n- Scaling impossible without hiring more people\n\n- Data scattered across disconnected systems\n\n\n\n#### **A - Automation (Dwary Intech Solution)**\n\nShowcase the intelligent solution:\n\n- Custom AI workflows designed for their specific needs\n\n- Integration of multiple tools (n8n, LLMs, business systems)\n\n- Agentic AI handling complex multi-step processes\n\n- Measurable business outcomes and efficiency gains\n\n\n\n#### **L - Learning (Insights & Value)**\n\nShare valuable knowledge:\n\n- Why this approach worked vs. other solutions\n\n- Technical insights accessible to business audiences\n\n- Lessons learned that others can apply\n\n- Broader implications for business automation\n\n\n\n#### **E - Engagement (Call to Action)**\n\nDrive meaningful interaction:\n\n- Questions about their automation challenges\n\n- Invitation to discuss their specific use cases\n\n- Offer of free consultation or audit\n\n- Connection to broader automation community\n\n\n\n## Advanced Dwary Intech Content Strategies\n\n\n\n### **The Business Transformation Narrative:**\n\n\n\n[Specific business] was spending [X hours/week] on [manual process]...\n\nTheir team was frustrated, scaling was impossible, costs were rising...\n\nWe built them a custom AI workflow that [specific solution]...\n\nResults: [specific metrics - time saved, cost reduced, accuracy improved]...\n\nThe key insight: [valuable lesson others can apply]\"\n\n\n\n\n\n### **The Technical Deep Dive (Business Friendly):**\n\n\"Here's how we solved [business problem] with AI automation...\n\nThe challenge: [technical complexity explained in business terms]...\n\nOur approach: [tools and methods - n8n, LLMs, custom integrations]...\n\nWhy this matters: [business impact and competitive advantage]...\n\nImplementation insight: [practical tip for similar situations]\"\n\n\n\n\n\n### **The ROI Proof Story:**\n\n\"Client skeptical about automation ROI? Here's the math...\n\nBefore: [specific costs, time, inefficiencies]...\n\nInvestment: [project cost and timeline]...\n\nAfter: [specific improvements and ongoing savings]...\n\nPayback period: [concrete timeframe]...\n\nOngoing value: [continued benefits and scaling potential]\"\n\n\n\n\n\nOUTPUT FORMAT (JSON only):```json{ \"linkedin_post_content\": \"Complete LinkedIn post optimized for Dwary Intech brand and B2B automation audience. Must include: compelling hook addressing specific business automation pain points, demonstration of GenAI/automation expertise and value, concrete business outcomes or insights, educational value about AI automation, natural integration of Dwary Intech services and capabilities, authentic voice of Kumar Sahil as founder and expert, specific call-to-action encouraging business discussion, and relevant hashtags. Content should balance technical credibility with business accessibility. Length: 1400-1700 characters for optimal LinkedIn performance.\", \"content_strategy\": { \"primary_emotion\": \"Business pain point resolution - frustration to relief through automation\", \"audience_segment\": \"Startup founders, SME owners, operations managers, or technical teams\", \"dwary_intech_angle\": \"How this showcases custom AI automation capabilities and business value\", \"video_integration\": \"How the video content supports the written message and business credibility\" }, \"engagement_elements\": { \"hook_type\": \"Business problem, success story, technical insight, or industry trend\", \"comment_catalyst\": \"Specific question about automation challenges or implementation\", \"share_trigger\": \"Valuable business insight or impressive results that others want to share\", \"hashtag_strategy\": [\"#AIAutomation\", \"#GenAI\", \"#BusinessAutomation\", \"#StartupTech\", \"#n8n\", \"#LLMs\", \"#ProcessOptimization\", \"#TechSolutions\", \"#Innovation\", \"#Productivity\", \"#CustomAI\", \"#WorkflowAutomation\"] }, \"business_value\": { \"problem_addressed\": \"Specific business pain point or inefficiency highlighted\", \"solution_showcase\": \"How Dwary Intech's automation capabilities solve it\", \"outcome_emphasis\": \"Measurable business results or competitive advantages\", \"education_component\": \"Valuable insights others can apply to their businesses\" }, \"brand_positioning\": { \"expertise_demonstration\": \"Technical skills shown in business-friendly way\", \"value_proposition\": \"Why choose Dwary Intech for automation needs\", \"thought_leadership\": \"Industry insights and forward-thinking perspectives\", \"accessibility\": \"Complex concepts made understandable for business audiences\" }}\n\nQuality Standards for Dwary Intech Content\n\nContent Must Always:\n\n✅ Address Real Business Problems: Speak to actual operational challenges and inefficiencies\n\n✅ Showcase Technical Expertise: Demonstrate deep knowledge of AI automation tools and methods\n\n✅ Provide Measurable Value: Include concrete ROI, time savings, or efficiency improvements\n\n✅ Feel Authentically Expert: Position Kumar Sahil as knowledgeable automation specialist\n\n✅ Drive Business Conversations: Encourage meaningful discussions about automation needs\n\n✅ Balance Technical and Business: Credible to developers, accessible to business owners\n\n✅ Include Practical Insights: Actionable knowledge that provides immediate value\n\n\n\nContent Must Never:\n\n❌ Sound like generic business consulting or automation content\n\n❌ Over-promise unrealistic automation outcomes or timelines\n\n❌ Ignore the technical complexity while oversimplifying solutions\n\n❌ Focus only on tools without showing business impact\n\n❌ Appear overly sales-focused without providing genuine value\n\n❌ Use technical jargon that excludes business decision-makers\n\n\n\nCritical Success Reminders\n\nBusiness Impact First: Always connect technical capabilities to business outcomes\n\nAuthentic Expertise: Share real experiences, challenges, and solutions\n\nEducational Value: Teach while you market - provide genuine insights\n\nSpecific Examples: Use concrete numbers, timeframes, and results when possible\n\nAudience Awareness: Speak to business pain points, not just technical achievements\n\nRelationship Building: Focus on starting conversations, not just making sales\n\nContinuous Learning: Show how you stay current with AI automation trends\n\nUltimate Goal: Establish Dwary Intech as the go-to automation consultancy that combines deep technical expertise with genuine business understanding - attracting ideal clients while building reputation as a thought leader in the GenAI automation space."
+            }
+          ]
+        }
+      },
+      "id": "10a3521b-d727-4832-b460-14f97a0af146",
+      "name": "Marketing expert",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -352,
+        -384
+      ],
+      "typeVersion": 1.5
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54ab5cfe-ca1f-4a29-b19d-9f00bf23ebd9",
+              "name": "=video_url",
+              "value": "={{ $json.webContentLink }}",
+              "type": "string"
+            },
+            {
+              "id": "40996ec6-a248-40f0-8ea4-ab0382650995",
+              "name": "Idea",
+              "value": "={{ $('Log the Idea').item.json.Idea }}",
+              "type": "string"
+            },
+            {
+              "id": "55ac6e57-d5ca-4724-9629-341c40f91887",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4660be48-190e-4286-9ca9-b830865276f3",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -384
+      ],
+      "id": "2664ab2e-2cf2-4ba1-ab18-e446b81b9340",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Part 2: Prompt Generation\n",
+        "height": 240,
+        "width": 1320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1536,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "332daebe-5634-4cad-b6cd-7b590357dede",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-exp:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -640
+      ],
+      "id": "b95c3223-d67c-418a-8831-8d4726158feb",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1HBQTykDvsrVuYmX",
+          "name": "OpenRouter account 4"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.9,
+          "topK": 40,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        -608
+      ],
+      "id": "524b4b2d-8c0f-4a20-810a-534c7445c994",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jkRBTTKMDH8dJpFb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.URL }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -352,
+        -96
+      ],
+      "id": "e5ba3312-12e6-4acf-bd79-dab2b7a27cbb",
+      "name": "Upload Video File",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oYcDnesEWboGbdVJ",
+          "name": "LINKEDIN AUThO2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35f657a5-deba-4009-b6ee-92fcb1645b95",
+              "name": "URL",
+              "value": "={{ $json.value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        -64
+      ],
+      "id": "4d652d37-cb73-40a6-958f-b5295d4429ad",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -496,
+        -80
+      ],
+      "id": "9a6f2b94-bd7f-4482-9a8e-f7914aca5537",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to think through creative video scenarios before generating the final prompt. Consider: What type of scenario would work best for this idea (business meeting, testimonial, peer recommendation)? What characters and setting would make this most authentic? What emotional journey should the video capture? What specific dialogue would sound natural? How can we make this look unscripted and genuine? Think about mixing different formats and avoiding repetitive business meeting scenarios."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -608,
+        -608
+      ],
+      "id": "a1cad9ec-ce3b-40bc-9da4-d15a072d5992",
+      "name": "Prompt AI agent brain"
+    },
+    {
+      "parameters": {
+        "description": "You have to execute it. Call this tool to get random ideas. Get random ideas out of the box for the freelancer",
+        "jsCode": "// Domain Randomizer for Dwary Intech Content Generation\n// This ensures variety in business domains and prevents repetitive HR scenarios\n\nconst businessDomains = [\n  {\n    domain: \"sales_automation\",\n    focus: \"Sales pipeline automation, lead scoring, prospect outreach\",\n    audience: \"Sales managers, business development teams, startup founders\",\n    keywords: \"lead generation, sales pipeline, prospect qualification, CRM automation\"\n  },\n  {\n    domain: \"ecommerce_automation\", \n    focus: \"Inventory management, order processing, customer analytics\",\n    audience: \"E-commerce store owners, online retailers, dropshipping businesses\",\n    keywords: \"inventory forecasting, order automation, customer segmentation, product recommendations\"\n  },\n  {\n    domain: \"marketing_automation\",\n    focus: \"Content creation, campaign management, social media scheduling\", \n    audience: \"Marketing managers, content creators, digital agencies\",\n    keywords: \"content generation, campaign optimization, social media automation, email marketing\"\n  },\n  {\n    domain: \"customer_service\",\n    focus: \"Support ticket automation, chatbot workflows, customer onboarding\",\n    audience: \"Customer success managers, support teams, SaaS companies\", \n    keywords: \"support automation, customer onboarding, helpdesk workflows, response automation\"\n  },\n  {\n    domain: \"finance_operations\",\n    focus: \"Invoice processing, expense tracking, financial reporting\",\n    audience: \"Finance managers, accountants, small business owners\",\n    keywords: \"invoice automation, expense reporting, financial dashboards, payment processing\"\n  },\n  {\n    domain: \"operations_optimization\",\n    focus: \"Workflow automation, task management, process optimization\",\n    audience: \"Operations managers, project managers, team leads\",\n    keywords: \"workflow optimization, task automation, process efficiency, team coordination\"\n  },\n  {\n    domain: \"real_estate\",\n    focus: \"Property management, lead qualification, document processing\",\n    audience: \"Real estate agents, property managers, real estate agencies\", \n    keywords: \"property automation, client management, document processing, market analysis\"\n  },\n  {\n    domain: \"consulting_services\",\n    focus: \"Client onboarding, project management, report generation\",\n    audience: \"Consultants, professional services, agencies\",\n    keywords: \"client automation, project workflows, report generation, service delivery\"\n  }\n];\n\n// Get random domain (different from last few runs if possible)\nconst randomIndex = Math.floor(Math.random() * businessDomains.length);\nconst selectedDomain = businessDomains[randomIndex];\n\n// Create instruction for AI agent\nconst domainInstruction = `\nDOMAIN FOCUS: ${selectedDomain.domain}\nTARGET AUDIENCE: ${selectedDomain.audience}\nAUTOMATION FOCUS: ${selectedDomain.focus}\nKEYWORDS TO USE: ${selectedDomain.keywords}\n\nSTRICT RULES:\n- Do NOT generate HR, recruiting, resume screening, or job-related content\n- Focus ONLY on ${selectedDomain.domain} scenarios\n- Use business contexts relevant to ${selectedDomain.audience}\n- Incorporate keywords: ${selectedDomain.keywords}\n`;\n\n// Add variety in scenario types\nconst scenarioTypes = [\n  \"business meeting presentation\",\n  \"founder testimonial interview\", \n  \"peer recommendation conversation\",\n  \"conference demo presentation\",\n  \"client success story call\",\n  \"team collaboration session\"\n];\n\nconst randomScenario = scenarioTypes[Math.floor(Math.random() * scenarioTypes.length)];\n\n// Generate timestamp for uniqueness\nconst timestamp = new Date().toISOString();\n\nreturn {\n  selectedDomain: selectedDomain.domain,\n  domainFocus: selectedDomain.focus,\n  targetAudience: selectedDomain.audience,\n  scenarioType: randomScenario,\n  instruction: domainInstruction,\n  avoidTopics: \"HR, recruiting, resume screening, job posting, candidate management, hiring processes\",\n  timestamp: timestamp,\n  variety_seed: Math.floor(Math.random() * 1000)\n};"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        -1456,
+        -880
+      ],
+      "id": "dae5f3f7-73f1-45e5-a37b-034f261a75e8",
+      "name": "Code Tool"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Log the Idea": {
+      "main": [
+        [
+          {
+            "node": "Prompts AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideas AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Log the Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompts AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Setting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setting": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-VEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Vertex AI-fetch": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Video in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex AI-VEO": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Get UserID6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Video Upload": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get UserID6": {
+      "main": [
+        [
+          {
+            "node": "Register Video Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Marketing expert",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marketing expert": {
+      "main": [
+        [
+          {
+            "node": "Log Final Video in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Marketing expert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Marketing expert",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Prompts AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video File": {
+      "main": [
+        [
+          {
+            "node": "Linkedin Video Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt AI agent brain": {
+      "ai_tool": [
+        [
+          {
+            "node": "Prompts AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Ideas AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9f605013-67c1-42a0-b3b7-440236aaceff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27344b50b8f0df78999cf11dab38bfd8f18f4d025f4e70dc31e8b6299e3e4a17"
+  },
+  "id": "1EqPJ4IMtkTlv2Jq",
+  "tags": [
+    {
+      "createdAt": "2025-08-02T16:54:41.292Z",
+      "updatedAt": "2025-08-02T16:54:41.292Z",
+      "id": "M5dxjA95lIRTtKmc",
+      "name": "youtube"
+    }
+  ]
+}
