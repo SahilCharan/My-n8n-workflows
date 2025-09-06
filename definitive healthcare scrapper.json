@@ -1,0 +1,865 @@
+{
+  "name": "definitive healthcare scrapper",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get form data\nconst formData = $('Definitive Healthcare - FINAL WORKING').first().json;\nconst dataType = formData['Data View Type'];\n\n// ONLY THE 4 CONFIRMED WORKING ENDPOINTS\nconst workingEndpoints = {\n  'HospitalView': 'Hospitals',\n  'Executives': 'Executives',\n  'NewsItems': 'NewsItems', \n  'RFP': 'RFP'\n};\n\nif (!workingEndpoints[dataType]) {\n  return [{\n    json: {\n      error: true,\n      message: `Invalid data type: ${dataType}. This should not happen with the restricted form.`\n    }\n  }];\n}\n\nconst endpoint = workingEndpoints[dataType];\nconst limit = formData['Result Limit'] || 100;\n\n// Build comprehensive API URL with all possible filters\nlet apiUrl = `https://api.defhc.com/v4/odata-v4/${endpoint}?$top=${limit}`;\nlet appliedFilters = [];\n\n// Provider/Facility/Executive Name filter\nif (formData['Provider/Facility/Executive Name']?.trim()) {\n  let searchField = 'Name';\n  if (endpoint === 'Executives') {\n    searchField = 'FullName';\n  } else if (endpoint === 'NewsItems') {\n    searchField = 'Title';\n  }\n  appliedFilters.push(`contains(${searchField},'${formData['Provider/Facility/Executive Name'].trim()}')`);\n}\n\n// State filter (works for Hospitals, Executives)\nif (formData['State/Region'] && formData['State/Region'] !== 'All States' && ['Hospitals', 'Executives'].includes(endpoint)) {\n  appliedFilters.push(`State eq '${formData['State/Region']}'`);\n}\n\n// City filter (works for Hospitals, Executives)\nif (formData['City (Optional)']?.trim() && ['Hospitals', 'Executives'].includes(endpoint)) {\n  appliedFilters.push(`contains(City,'${formData['City (Optional)'].trim()}')`);\n}\n\n// Medical Specialty filter (Hospitals only)\nif (formData['Medical Specialty'] && formData['Medical Specialty'] !== 'All Specialties' && endpoint === 'Hospitals') {\n  appliedFilters.push(`contains(Specialty,'${formData['Medical Specialty']}')`);\n}\n\n// Organization Size filter (Hospitals, Executives)\nif (formData['Organization Size'] && formData['Organization Size'] !== 'All Sizes' && ['Hospitals', 'Executives'].includes(endpoint)) {\n  const sizeMap = {\n    'Small (1-99 employees)': 'EmployeeCount lt 100',\n    'Medium (100-499 employees)': 'EmployeeCount ge 100 and EmployeeCount lt 500',\n    'Large (500-1999 employees)': 'EmployeeCount ge 500 and EmployeeCount lt 2000',\n    'Enterprise (2000+ employees)': 'EmployeeCount ge 2000'\n  };\n  \n  if (sizeMap[formData['Organization Size']]) {\n    appliedFilters.push(`(${sizeMap[formData['Organization Size']]})`);\n  }\n}\n\n// Revenue Range filter (Hospitals mainly)\nif (formData['Revenue Range'] && formData['Revenue Range'] !== 'All Revenue Ranges' && endpoint === 'Hospitals') {\n  const revenueMap = {\n    'Under $10M': 'Revenue lt 10000000',\n    '$10M - $50M': 'Revenue ge 10000000 and Revenue lt 50000000',\n    '$50M - $100M': 'Revenue ge 50000000 and Revenue lt 100000000',\n    '$100M - $500M': 'Revenue ge 100000000 and Revenue lt 500000000',\n    '$500M - $1B': 'Revenue ge 500000000 and Revenue lt 1000000000',\n    'Over $1B': 'Revenue ge 1000000000'\n  };\n  \n  if (revenueMap[formData['Revenue Range']]) {\n    appliedFilters.push(`(${revenueMap[formData['Revenue Range']]})`);\n  }\n}\n\n// Bed Count filter (Hospitals only)\nif (formData['Bed Count Range'] && formData['Bed Count Range'] !== 'All Bed Counts' && endpoint === 'Hospitals') {\n  const bedCountMap = {\n    'Small (1-99 beds)': 'BedCount lt 100',\n    'Medium (100-299 beds)': 'BedCount ge 100 and BedCount lt 300',\n    'Large (300-499 beds)': 'BedCount ge 300 and BedCount lt 500',\n    'Very Large (500+ beds)': 'BedCount ge 500'\n  };\n  \n  if (bedCountMap[formData['Bed Count Range']]) {\n    appliedFilters.push(`(${bedCountMap[formData['Bed Count Range']]})`);\n  }\n}\n\n// Teaching Hospital filter (Hospitals only)\nif (formData['Teaching Hospital'] && formData['Teaching Hospital'] !== 'All Types' && endpoint === 'Hospitals') {\n  if (formData['Teaching Hospital'] === 'Teaching Hospitals Only') {\n    appliedFilters.push(`TeachingHospital eq true`);\n  } else if (formData['Teaching Hospital'] === 'Non-Teaching Hospitals Only') {\n    appliedFilters.push(`TeachingHospital eq false`);\n  }\n}\n\n// Ownership Type filter (Hospitals only)\nif (formData['Ownership Type'] && formData['Ownership Type'] !== 'All Ownership Types' && endpoint === 'Hospitals') {\n  const ownershipMap = {\n    'For-Profit': 'Ownership eq \"For-Profit\"',\n    'Non-Profit': 'Ownership eq \"Non-Profit\"',\n    'Government': 'Ownership eq \"Government\"',\n    'Public': 'Ownership eq \"Public\"'\n  };\n  \n  if (ownershipMap[formData['Ownership Type']]) {\n    appliedFilters.push(`(${ownershipMap[formData['Ownership Type']]})`);\n  }\n}\n\n// Executive Title filter (Executives only)\nif (formData['Executive Title'] && formData['Executive Title'] !== 'All Titles' && endpoint === 'Executives') {\n  appliedFilters.push(`contains(Title,'${formData['Executive Title']}')`);\n}\n\n// News Category filter (NewsItems only)\nif (formData['News Category'] && formData['News Category'] !== 'All Categories' && endpoint === 'NewsItems') {\n  appliedFilters.push(`contains(Category,'${formData['News Category']}')`);\n}\n\n// Date Range filter (NewsItems, RFP)\nif (formData['Date Range'] && formData['Date Range'] !== 'All Time' && ['NewsItems', 'RFP'].includes(endpoint)) {\n  const now = new Date();\n  let startDate;\n  \n  switch(formData['Date Range']) {\n    case 'Last 30 Days':\n      startDate = new Date(now.setDate(now.getDate() - 30));\n      break;\n    case 'Last 90 Days':\n      startDate = new Date(now.setDate(now.getDate() - 90));\n      break;\n    case 'Last 6 Months':\n      startDate = new Date(now.setMonth(now.getMonth() - 6));\n      break;\n    case 'Last Year':\n      startDate = new Date(now.setFullYear(now.getFullYear() - 1));\n      break;\n  }\n  \n  if (startDate) {\n    const dateField = endpoint === 'NewsItems' ? 'PublishedDate' : 'PostedDate';\n    appliedFilters.push(`${dateField} ge ${startDate.toISOString()}`);\n  }\n}\n\n// Add filters to URL\nif (appliedFilters.length > 0) {\n  apiUrl += `&$filter=${appliedFilters.join(' and ')}`;\n}\n\n// Add sorting\nif (formData['Sort Results By'] && formData['Sort Results By'] !== 'Relevance') {\n  const sortMap = {\n    'Name (A-Z)': '$orderby=Name asc',\n    'Name (Z-A)': '$orderby=Name desc',\n    'Revenue (High to Low)': '$orderby=Revenue desc',\n    'Revenue (Low to High)': '$orderby=Revenue asc',\n    'Employee Count (High to Low)': '$orderby=EmployeeCount desc',\n    'Employee Count (Low to High)': '$orderby=EmployeeCount asc',\n    'Bed Count (High to Low)': '$orderby=BedCount desc',\n    'Bed Count (Low to High)': '$orderby=BedCount asc',\n    'Date (Newest First)': endpoint === 'NewsItems' ? '$orderby=PublishedDate desc' : '$orderby=PostedDate desc',\n    'Date (Oldest First)': endpoint === 'NewsItems' ? '$orderby=PublishedDate asc' : '$orderby=PostedDate asc',\n    'Last Updated': '$orderby=LastUpdated desc'\n  };\n  \n  if (sortMap[formData['Sort Results By']]) {\n    apiUrl += `&${sortMap[formData['Sort Results By']]}`;\n  }\n}\n\n// Add expansion for related data (Hospital -> Executives)\nif (formData['Include Related Data'] === 'Yes' && endpoint === 'Hospitals') {\n  apiUrl += '&$expand=Executives';\n}\n\nreturn [{\n  json: {\n    apiUrl: apiUrl,\n    endpoint: endpoint,\n    formData: formData,\n    originalDataType: dataType,\n    appliedFilters: appliedFilters,\n    error: false\n  }\n}];"
+      },
+      "id": "443c9708-3ea2-4b51-b23e-49b9562cd7df",
+      "name": "Build Final API Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1664,
+        6608
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.apiUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('API Authentication4').first().json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "7200d1f3-d663-4322-ae5c-2fda87a08d4f",
+      "name": "Fetch Final Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1472,
+        6608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the API response and query info\nconst apiResponse = $('Fetch Final Data').first().json;\nconst queryInfo = $('Build Final API Query').first().json;\nconst formData = queryInfo.formData;\n\n// Extract data from OData response\nlet extractedData = [];\n\nif (apiResponse && apiResponse.value && Array.isArray(apiResponse.value)) {\n  extractedData = apiResponse.value;\n} else if (Array.isArray(apiResponse)) {\n  extractedData = apiResponse;\n} else if (apiResponse && typeof apiResponse === 'object') {\n  extractedData = [apiResponse];\n}\n\n// Process and format results with comprehensive metadata\nconst results = extractedData.map((item, index) => {\n  let processedItem = {\n    record_id: index + 1,\n    data_source: queryInfo.endpoint,\n    original_request_type: queryInfo.originalDataType,\n    extracted_at: new Date().toISOString(),\n    search_criteria: {\n      data_type: formData['Data View Type'],\n      search_term: formData['Provider/Facility/Executive Name'] || 'Any',\n      state: formData['State/Region'] || 'Any',\n      city: formData['City (Optional)'] || 'Any',\n      specialty: formData['Medical Specialty'] || 'Any',\n      organization_size: formData['Organization Size'] || 'Any',\n      revenue_range: formData['Revenue Range'] || 'Any',\n      bed_count_range: formData['Bed Count Range'] || 'Any',\n      teaching_hospital: formData['Teaching Hospital'] || 'Any',\n      ownership_type: formData['Ownership Type'] || 'Any',\n      executive_title: formData['Executive Title'] || 'Any',\n      news_category: formData['News Category'] || 'Any',\n      date_range: formData['Date Range'] || 'All Time',\n      sort_by: formData['Sort Results By'] || 'Relevance',\n      result_limit: formData['Result Limit'] || 100,\n      include_contact: formData['Include Contact Information'] || 'Yes',\n      include_financial: formData['Include Financial Data'] || 'Yes',\n      include_related: formData['Include Related Data'] || 'No'\n    },\n    applied_filters: queryInfo.appliedFilters\n  };\n\n  // Add all original item data with conditional filtering\n  Object.keys(item).forEach(key => {\n    // Exclude contact info if requested\n    if (formData['Include Contact Information'] === 'No' && \n        ['Phone', 'Email', 'ContactName', 'Website', 'ContactEmail', 'ContactPhone', 'ExecutiveEmail', 'ExecutivePhone'].includes(key)) {\n      return;\n    }\n    \n    // Exclude financial data if requested\n    if (formData['Include Financial Data'] === 'No' && \n        ['Revenue', 'NetIncome', 'TotalAssets', 'Charges', 'OperatingMargin', 'TotalMargin', 'OperatingIncome', 'NetPatientRevenue'].includes(key)) {\n      return;\n    }\n    \n    processedItem[key] = item[key];\n  });\n\n  return processedItem;\n});\n\nreturn results.map(item => ({ json: item }));"
+      },
+      "id": "006374ed-ccad-4ec2-b6bd-d3e4cda36ba7",
+      "name": "Process Final Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        6608
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"data_type_requested\": \"{{ $json.original_request_type }}\",\n  \"data_source_used\": \"{{ $json.data_source }}\",\n  \"api_endpoint\": \"Confirmed Working OData Endpoint\",\n  \"total_records_found\": {{ $('Process Final Data').all().length }},\n  \"applied_filters\": {{ $json.applied_filters }},\n  \"search_criteria\": {{ $json.search_criteria }},\n  \"note\": \"This data is from the confirmed working {{ $json.data_source }} API endpoint with comprehensive filtering applied.\",\n  \"google_sheets_saved\": true,\n  \"results\": {{ $('Process Final Data').all().map(item => item.json) }}\n}",
+        "options": {}
+      },
+      "id": "c415a5c4-c381-4c00-9249-506f2b69c52a",
+      "name": "Return Final Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        6720
+      ]
+    },
+    {
+      "parameters": {
+        "path": "definitive-healthcare-final-working",
+        "formTitle": "Definitive Healthcare - Final Working Data Extractor",
+        "formDescription": "Extract data from the 4 confirmed working API endpoints: Hospitals, Executives, News Items, and RFP data. Comprehensive filtering available for each data type.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Data View Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "HospitalView"
+                  },
+                  {
+                    "option": "Executives"
+                  },
+                  {
+                    "option": "NewsItems"
+                  },
+                  {
+                    "option": "RFP"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Provider/Facility/Executive Name"
+            },
+            {
+              "fieldLabel": "State/Region",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All States"
+                  },
+                  {
+                    "option": "Alabama"
+                  },
+                  {
+                    "option": "Alaska"
+                  },
+                  {
+                    "option": "Arizona"
+                  },
+                  {
+                    "option": "Arkansas"
+                  },
+                  {
+                    "option": "California"
+                  },
+                  {
+                    "option": "Colorado"
+                  },
+                  {
+                    "option": "Connecticut"
+                  },
+                  {
+                    "option": "Delaware"
+                  },
+                  {
+                    "option": "Florida"
+                  },
+                  {
+                    "option": "Georgia"
+                  },
+                  {
+                    "option": "Hawaii"
+                  },
+                  {
+                    "option": "Idaho"
+                  },
+                  {
+                    "option": "Illinois"
+                  },
+                  {
+                    "option": "Indiana"
+                  },
+                  {
+                    "option": "Iowa"
+                  },
+                  {
+                    "option": "Kansas"
+                  },
+                  {
+                    "option": "Kentucky"
+                  },
+                  {
+                    "option": "Louisiana"
+                  },
+                  {
+                    "option": "Maine"
+                  },
+                  {
+                    "option": "Maryland"
+                  },
+                  {
+                    "option": "Massachusetts"
+                  },
+                  {
+                    "option": "Michigan"
+                  },
+                  {
+                    "option": "Minnesota"
+                  },
+                  {
+                    "option": "Mississippi"
+                  },
+                  {
+                    "option": "Missouri"
+                  },
+                  {
+                    "option": "Montana"
+                  },
+                  {
+                    "option": "Nebraska"
+                  },
+                  {
+                    "option": "Nevada"
+                  },
+                  {
+                    "option": "New Hampshire"
+                  },
+                  {
+                    "option": "New Jersey"
+                  },
+                  {
+                    "option": "New Mexico"
+                  },
+                  {
+                    "option": "New York"
+                  },
+                  {
+                    "option": "North Carolina"
+                  },
+                  {
+                    "option": "North Dakota"
+                  },
+                  {
+                    "option": "Ohio"
+                  },
+                  {
+                    "option": "Oklahoma"
+                  },
+                  {
+                    "option": "Oregon"
+                  },
+                  {
+                    "option": "Pennsylvania"
+                  },
+                  {
+                    "option": "Rhode Island"
+                  },
+                  {
+                    "option": "South Carolina"
+                  },
+                  {
+                    "option": "South Dakota"
+                  },
+                  {
+                    "option": "Tennessee"
+                  },
+                  {
+                    "option": "Texas"
+                  },
+                  {
+                    "option": "Utah"
+                  },
+                  {
+                    "option": "Vermont"
+                  },
+                  {
+                    "option": "Virginia"
+                  },
+                  {
+                    "option": "Washington"
+                  },
+                  {
+                    "option": "West Virginia"
+                  },
+                  {
+                    "option": "Wisconsin"
+                  },
+                  {
+                    "option": "Wyoming"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "City (Optional)"
+            },
+            {
+              "fieldLabel": "Medical Specialty (Hospitals Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Specialties"
+                  },
+                  {
+                    "option": "Allergy and Immunology"
+                  },
+                  {
+                    "option": "Anesthesiology"
+                  },
+                  {
+                    "option": "Cardiology"
+                  },
+                  {
+                    "option": "Cardiovascular Surgery"
+                  },
+                  {
+                    "option": "Critical Care Medicine"
+                  },
+                  {
+                    "option": "Dermatology"
+                  },
+                  {
+                    "option": "Emergency Medicine"
+                  },
+                  {
+                    "option": "Endocrinology"
+                  },
+                  {
+                    "option": "Family Medicine"
+                  },
+                  {
+                    "option": "Gastroenterology"
+                  },
+                  {
+                    "option": "General Surgery"
+                  },
+                  {
+                    "option": "Geriatrics"
+                  },
+                  {
+                    "option": "Hematology"
+                  },
+                  {
+                    "option": "Infectious Disease"
+                  },
+                  {
+                    "option": "Internal Medicine"
+                  },
+                  {
+                    "option": "Nephrology"
+                  },
+                  {
+                    "option": "Neurology"
+                  },
+                  {
+                    "option": "Neurosurgery"
+                  },
+                  {
+                    "option": "Obstetrics and Gynecology"
+                  },
+                  {
+                    "option": "Oncology"
+                  },
+                  {
+                    "option": "Ophthalmology"
+                  },
+                  {
+                    "option": "Orthopedic Surgery"
+                  },
+                  {
+                    "option": "Otolaryngology"
+                  },
+                  {
+                    "option": "Pathology"
+                  },
+                  {
+                    "option": "Pediatrics"
+                  },
+                  {
+                    "option": "Physical Medicine"
+                  },
+                  {
+                    "option": "Plastic Surgery"
+                  },
+                  {
+                    "option": "Psychiatry"
+                  },
+                  {
+                    "option": "Pulmonary Medicine"
+                  },
+                  {
+                    "option": "Radiology"
+                  },
+                  {
+                    "option": "Rheumatology"
+                  },
+                  {
+                    "option": "Urology"
+                  },
+                  {
+                    "option": "Multi-Specialty"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Organization Size",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Sizes"
+                  },
+                  {
+                    "option": "Small (1-99 employees)"
+                  },
+                  {
+                    "option": "Medium (100-499 employees)"
+                  },
+                  {
+                    "option": "Large (500-1999 employees)"
+                  },
+                  {
+                    "option": "Enterprise (2000+ employees)"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Revenue Range (Hospitals Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Revenue Ranges"
+                  },
+                  {
+                    "option": "Under $10M"
+                  },
+                  {
+                    "option": "$10M - $50M"
+                  },
+                  {
+                    "option": "$50M - $100M"
+                  },
+                  {
+                    "option": "$100M - $500M"
+                  },
+                  {
+                    "option": "$500M - $1B"
+                  },
+                  {
+                    "option": "Over $1B"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Bed Count Range (Hospitals Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Bed Counts"
+                  },
+                  {
+                    "option": "Small (1-99 beds)"
+                  },
+                  {
+                    "option": "Medium (100-299 beds)"
+                  },
+                  {
+                    "option": "Large (300-499 beds)"
+                  },
+                  {
+                    "option": "Very Large (500+ beds)"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Teaching Hospital (Hospitals Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Types"
+                  },
+                  {
+                    "option": "Teaching Hospitals Only"
+                  },
+                  {
+                    "option": "Non-Teaching Hospitals Only"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Ownership Type (Hospitals Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Ownership Types"
+                  },
+                  {
+                    "option": "For-Profit"
+                  },
+                  {
+                    "option": "Non-Profit"
+                  },
+                  {
+                    "option": "Government"
+                  },
+                  {
+                    "option": "Public"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Executive Title (Executives Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Titles"
+                  },
+                  {
+                    "option": "CEO"
+                  },
+                  {
+                    "option": "CFO"
+                  },
+                  {
+                    "option": "CMO"
+                  },
+                  {
+                    "option": "CIO"
+                  },
+                  {
+                    "option": "COO"
+                  },
+                  {
+                    "option": "President"
+                  },
+                  {
+                    "option": "Vice President"
+                  },
+                  {
+                    "option": "Director"
+                  },
+                  {
+                    "option": "Manager"
+                  },
+                  {
+                    "option": "Administrator"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "News Category (News Items Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Categories"
+                  },
+                  {
+                    "option": "Mergers & Acquisitions"
+                  },
+                  {
+                    "option": "Technology"
+                  },
+                  {
+                    "option": "Policy & Regulation"
+                  },
+                  {
+                    "option": "Leadership Changes"
+                  },
+                  {
+                    "option": "Financial Results"
+                  },
+                  {
+                    "option": "Clinical Trials"
+                  },
+                  {
+                    "option": "New Facilities"
+                  },
+                  {
+                    "option": "Partnerships"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Date Range (News & RFP Only)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "All Time"
+                  },
+                  {
+                    "option": "Last 30 Days"
+                  },
+                  {
+                    "option": "Last 90 Days"
+                  },
+                  {
+                    "option": "Last 6 Months"
+                  },
+                  {
+                    "option": "Last Year"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Sort Results By",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Relevance"
+                  },
+                  {
+                    "option": "Name (A-Z)"
+                  },
+                  {
+                    "option": "Name (Z-A)"
+                  },
+                  {
+                    "option": "Revenue (High to Low)"
+                  },
+                  {
+                    "option": "Revenue (Low to High)"
+                  },
+                  {
+                    "option": "Employee Count (High to Low)"
+                  },
+                  {
+                    "option": "Employee Count (Low to High)"
+                  },
+                  {
+                    "option": "Bed Count (High to Low)"
+                  },
+                  {
+                    "option": "Bed Count (Low to High)"
+                  },
+                  {
+                    "option": "Date (Newest First)"
+                  },
+                  {
+                    "option": "Date (Oldest First)"
+                  },
+                  {
+                    "option": "Last Updated"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Result Limit",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Include Contact Information",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Include Financial Data",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Include Related Data",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "No"
+                  },
+                  {
+                    "option": "Yes"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "options": {
+          "ignoreBots": true
+        }
+      },
+      "id": "b9202e2c-af1e-4205-b283-8a7b6a0803e8",
+      "name": "Definitive Healthcare - FINAL WORKING",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -2064,
+        6608
+      ],
+      "webhookId": "definitive-healthcare-final-working"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MkrkyZLQNkjpuoWdlpQ8WA-65lkt19GZi41_s5dGBTI",
+          "mode": "list",
+          "cachedResultName": "internship sheet 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MkrkyZLQNkjpuoWdlpQ8WA-65lkt19GZi41_s5dGBTI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 80188865,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MkrkyZLQNkjpuoWdlpQ8WA-65lkt19GZi41_s5dGBTI/edit#gid=80188865"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        },
+        "options": {}
+      },
+      "id": "40b12e04-2a81-4d46-988b-8f33ad1f5a3c",
+      "name": "Save to Google Sheets4",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -960,
+        6480
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gTkP0GLHEW9Zy2Pg",
+          "name": "Sahil Google Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.defhc.com/v4/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "password"
+            },
+            {
+              "name": "username",
+              "value": "hardik.kevadiya@infinx.com"
+            },
+            {
+              "name": "password",
+              "value": "Anaya@5176"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "82beaf6f-8382-4e7d-82f7-84b2e62c1d64",
+      "name": "API Authentication4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1856,
+        6608
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Build Final API Query": {
+      "main": [
+        [
+          {
+            "node": "Fetch Final Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Final Data": {
+      "main": [
+        [
+          {
+            "node": "Process Final Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Final Data": {
+      "main": [
+        [
+          {
+            "node": "Return Final Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save to Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definitive Healthcare - FINAL WORKING": {
+      "main": [
+        [
+          {
+            "node": "API Authentication4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Authentication4": {
+      "main": [
+        [
+          {
+            "node": "Build Final API Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ce986b63-3a3d-4cf0-99eb-c5a0ee0276d9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27344b50b8f0df78999cf11dab38bfd8f18f4d025f4e70dc31e8b6299e3e4a17"
+  },
+  "id": "zq3HKtBkihtcocEW",
+  "tags": []
+}

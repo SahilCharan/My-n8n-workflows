@@ -1,0 +1,187 @@
+{
+  "name": "RE+ 2025 – Exhibitor Scraper (No OpenAI)",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [{ "name": "base_url", "value": "https://re25.mapyourshow.com" }],
+          "number": [
+            { "name": "pageSize", "value": 200 },
+            { "name": "start", "value": 0 }
+          ],
+          "boolean": [{ "name": "hasMorePages", "value": true }]
+        }
+      },
+      "name": "Set Initial Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "id": "init_config"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.base_url }}/8_0/ajax/remote-proxy.cfm",
+        "method": "GET",
+        "response": { "format": "json" },
+        "options": { "timeout": 10000 },
+        "queryParameters": {
+          "parameters": [
+            { "name": "action", "value": "search" },
+            { "name": "searchtype", "value": "exhibitorgallery" },
+            { "name": "searchsize", "value": "={{ $json.pageSize }}" },
+            { "name": "start", "value": "={{ $json.start }}" }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-requested-with", "value": "XMLHttpRequest" },
+            { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
+          ]
+        }
+      },
+      "name": "GET Exhibitor List Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 300],
+      "id": "get_list"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = $items[0].json;\nconst hits = resp.DATA?.results?.exhibitor?.hit || [];\n\nif (!$workflow.context.all) $workflow.context.all = [];\n\nhits.forEach(h => {\n  if (h.fields?.exhid_l) {\n    $workflow.context.all.push({\n      exhid: h.fields.exhid_l,\n      name: h.fields.exnm_t || 'Unknown',\n      base_url: $items[0].json.base_url\n    });\n  }\n});\n\nconst hasMore = hits.length === $items[0].json.pageSize;\nconst nextStart = $items[0].json.start + $items[0].json.pageSize;\n\nreturn hasMore\n  ? [{ json: { ...$items[0].json, start: nextStart, hasMorePages: true } }]\n  : [{ json: { total: $workflow.context.all.length, done: true } }];"
+      },
+      "name": "Collect & Paginate",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [1040, 300],
+      "id": "collect_ids"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.hasMorePages }}", "operation": "true" }]
+        }
+      },
+      "name": "Has More?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1260, 300],
+      "id": "check_more_pages"
+    },
+    {
+      "parameters": {
+        "jsCode": "return ($workflow.context.all || []).map(e => ({ json: e }));"
+      },
+      "name": "Output IDs",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [1260, 500],
+      "id": "output_ids"
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "name": "1-by-1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1260, 700],
+      "id": "split_batches"
+    },
+    {
+      "parameters": { "amount": 1000, "unit": "milliseconds" },
+      "name": "Wait 1s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1260, 900],
+      "id": "wait_node"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.base_url }}/8_0/exhibitor/exhibitor-details.cfm",
+        "method": "GET",
+        "response": { "format": "string" },
+        "options": { "timeout": 10000 },
+        "queryParameters": {
+          "parameters": [{ "name": "exhid", "value": "={{ $json.exhid }}" }]
+        },
+        "headerParameters": {
+          "parameters": [
+            { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+            { "name": "Referer", "value": "={{ $json.base_url }}/8_0/explore/exhibitor-gallery.cfm" }
+          ]
+        }
+      },
+      "name": "GET Detail Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1260, 1100],
+      "id": "get_details"
+    },
+    {
+      "parameters": {
+        "sourceValue": "={{ $json.data }}",
+        "extractionValues": {
+          "values": [
+            { "key": "company_name", "cssSelector": "section#scroll-description h2, .exhibitor-name, h1.company-name", "returnValue": "text" },
+            { "key": "address", "cssSelector": "p.showcase-address, .address, .exhibitor-address", "returnValue": "text" },
+            { "key": "website", "cssSelector": "ul.showcase-web-phone a[href^=\"http\"]", "returnValue": "attribute", "attribute": "href" },
+            { "key": "email", "cssSelector": "a[href^=\"mailto:\"]", "returnValue": "attribute", "attribute": "href" },
+            { "key": "phone", "cssSelector": "ul.showcase-web-phone li:not(:has(a)), .phone, .exhibitor-phone", "returnValue": "text" },
+            { "key": "booth", "cssSelector": ".showcase-booth-number, .booth-number, .booth", "returnValue": "text" },
+            { "key": "description", "cssSelector": "section#scroll-description p, .description, .exhibitor-description", "returnValue": "text" }
+          ]
+        },
+        "options": { "trimValues": true }
+      },
+      "name": "Extract Fields",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 1,
+      "position": [1260, 1300],
+      "id": "extract_fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $items[0].json;\n\nconst clean = t => (t || '').replace(/\\s+/g, ' ').trim();\nconst domain = u => u ? u.replace(/^https?:\\/\\/(www\\.)?/, '').split('/')[0] : '';\nconst phone = p => (p || '').replace(/[^+\\d\\s\\-\\(\\)]/g, '').trim();\nconst email = e => (e || '').replace(/^mailto:/i, '').toLowerCase().trim();\n\nconst out = {\n  exhid: d.exhid,\n  company_name: clean(d.company_name || d.name),\n  website: domain(d.website),\n  email: email(d.email),\n  phone: phone(d.phone),\n  address: clean(d.address),\n  booth: clean(d.booth),\n  description: clean(d.description),\n  source_url: `${d.base_url}/8_0/exhibitor/exhibitor-details.cfm?exhid=${d.exhid}`,\n  scraped_at: new Date().toISOString()\n};\n\nreturn (out.email || out.phone || out.website) ? [{ json: out }] : [];"
+      },
+      "name": "Clean & Filter",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [1260, 1500],
+      "id": "clean_data"
+    },
+    {
+      "parameters": { "mode": "combine", "combinationMode": "mergeByIndex" },
+      "name": "Merge All",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [1500, 1500],
+      "id": "collect_results"
+    },
+    {
+      "parameters": {},
+      "name": "Final Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1740, 1500],
+      "id": "final_output"
+    }
+  ],
+  "connections": {
+    "Set Initial Config": { "main": [[{ "node": "GET Exhibitor List Page", "type": "main", "index": 0 }]] },
+    "GET Exhibitor List Page": { "main": [[{ "node": "Collect & Paginate", "type": "main", "index": 0 }]] },
+    "Collect & Paginate": { "main": [[{ "node": "Has More?", "type": "main", "index": 0 }]] },
+    "Has More?": {
+      "main": [
+        [{ "node": "GET Exhibitor List Page", "type": "main", "index": 0 }],
+        [{ "node": "Output IDs", "type": "main", "index": 0 }]
+      ]
+    },
+    "Output IDs": { "main": [[{ "node": "1-by-1", "type": "main", "index": 0 }]] },
+    "1-by-1": { "main": [[{ "node": "Wait 1s", "type": "main", "index": 0 }]] },
+    "Wait 1s": { "main": [[{ "node": "GET Detail Page", "type": "main", "index": 0 }]] },
+    "GET Detail Page": { "main": [[{ "node": "Extract Fields", "type": "main", "index": 0 }]] },
+    "Extract Fields": { "main": [[{ "node": "Clean & Filter", "type": "main", "index": 0 }]] },
+    "Clean & Filter": { "main": [[{ "node": "Merge All", "type": "main", "index": 0 }]] },
+    "Merge All": { "main": [[{ "node": "Final Output", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": ["scraper", "re+2025", "no-openai"]
+}

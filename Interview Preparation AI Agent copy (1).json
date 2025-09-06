@@ -1,0 +1,828 @@
+{
+  "name": "Interview Preparation AI Agent copy",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "🎯 AI Interview Preparation Assistant",
+        "formDescription": "Generate comprehensive interview preparation materials tailored to your job application",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "jobTitle",
+              "placeholder": "e.g., Senior Software Engineer",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "companyName",
+              "placeholder": "e.g., Choco GmbH",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "companyWebsite",
+              "placeholder": "https://company.com"
+            },
+            {
+              "fieldLabel": "jobDescription",
+              "fieldType": "textarea",
+              "placeholder": "Paste the complete job description here...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "location",
+              "placeholder": "e.g., Berlin, Germany",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "workModel"
+            },
+            {
+              "fieldLabel": "interviewRound",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "targetDate",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "resume",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf,.doc,.docx,.txt",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "focusAreas",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "supportingDocs",
+              "fieldType": "textarea",
+              "placeholder": "Add links to portfolio, GitHub, etc. (one per line)"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -3136,
+        160
+      ],
+      "id": "ed0d4775-1333-4524-8eb1-406d34495040",
+      "name": "📋 Interview Prep Form",
+      "webhookId": "0ba709b2-0558-49c2-9f0b-a83751224211"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resume",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2672,
+        -80
+      ],
+      "id": "61a19067-4295-48e6-aa37-94b10a075d0e",
+      "name": "📄 Resume File Extractor",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2512,
+        224
+      ],
+      "id": "8cb90406-3cf3-4208-8945-197d768058fb",
+      "name": "🔗 Input Merger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract skills and experience from this resume for a{{ $('📋 Interview Prep Form').item.json.jobTitle }}  position at{{ $('📋 Interview Prep Form').item.json.companyName }}  :\nResume Content:\n{{ $json.text }}\n\nJob Description:{{ $('📋 Interview Prep Form').item.json.jobDescription }}\n\n\nAnalyze:\n1. Professional experience and achievements\n2. Technical skills and certifications\n3. Education and projects\n4. Career progression and gaps\n5. Alignment with target role\n6. Strengths and areas for improvement\n7. 5-7 targeted interview questions based on their background\n8. Key talking points they should prepare\n\nReturn structured analysis with specific examples and recommendations.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -2160,
+        -320
+      ],
+      "id": "d4eabed7-51d5-4a47-b33c-e6caf214b9c5",
+      "name": "🤖 Resume Analysis Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2064,
+        -96
+      ],
+      "id": "ae5517fc-1d03-4a70-aa39-f8b8f9f3d44f",
+      "name": "🧠 OpenAI GPT-4 Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "u00gLXrkZ7rqx8f3",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "You are a comprehensive company research specialist with access to real-time data. Provide detailed, up-to-date information about companies including business model, financial health, recent news, culture, leadership, market position, and growth prospects. Focus on information that would be valuable for job interview preparation and include verified sources.",
+              "role": "system"
+            },
+            {
+              "content": "=Research {{ $('📋 Interview Prep Form').item.json.jobTitle }} at {{ $('📋 Interview Prep Form').item.json.companyName }}  comprehensively for interview preparation. Include:\n\n1. What is the company’s business model and main revenue streams?\n2. What are its core products/services, and who are the target customers?\n3. How has the company performed financially in the last 2–3 years?\n4. What recent news, partnerships, or product launches stand out (last 6 months)?\n5. What values and culture does the company emphasize?\n6. Who are the key leaders and decision-makers?\n7. What challenges is the company currently facing?\n8. What long-term growth or expansion plans has it announced?\n9. How do employees describe their experience working here (reviews, interviews)?\n10. What is known about the company’s hiring style and interview process?\n11. Ask 5-6 Questions on above research for the interview preperation\n\nCompany website: {{ $('📋 Interview Prep Form').item.json.companyWebsite }}\nTarget role: {{ $('📋 Interview Prep Form').item.json.jobTitle }}\nLocation: {{ $('📋 Interview Prep Form').item.json.location }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "bcf84fe7-db04-4663-9b59-272e49551cda",
+      "name": "🏢 Deep Company Research",
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        224
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "perplexityApi": {
+          "id": "55GbWAP0h8CmTgIt",
+          "name": "Perplexity account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "You are an industry analysis expert. Research current trends, market dynamics, technological disruptions, and future outlook for specific industries and job roles. Provide insights that would help candidates understand the broader context of their target role and industry.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the industry context for {{ $('📋 Interview Prep Form').item.json.jobTitle }} roles, specifically in relation to {{ $('📋 Interview Prep Form').item.json.companyName }}'s sector. Include:\n\n1. What are the major trends shaping this industry today?\n2. Which market segments or regions are growing the fastest?\n3. What new technologies or innovations are driving change?\n4. What key challenges or risks does the industry face?\n5. How are customer needs and preferences evolving?\n6. What role do sustainability and ESG (environment, social, governance) play in shaping the sector?\n7. How are new regulations and policies influencing the industry?\n8. Which companies or startups are considered pioneers/innovators?\n9. What future opportunities exist for growth or disruption in this industry?\n10. How do global events (economy, supply chain, geopolitics) affect the industry?\n11. Ask 5-6 Questions on above research for the interview preperation\n\nTarget role: {{ $('📋 Interview Prep Form').item.json.jobTitle }}\nCompany: {{ $('📋 Interview Prep Form').item.json.companyName }}\nLocation: {{ $('📋 Interview Prep Form').item.json.location }}\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "520bba01-e24b-4c5c-ae20-3c55ab799f1b",
+      "name": "📈 Industry Trends Analyzer",
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        416
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "perplexityApi": {
+          "id": "55GbWAP0h8CmTgIt",
+          "name": "Perplexity account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "You are a competitive intelligence specialist. Research and analyze competitors to provide strategic insights about market positioning, competitive advantages, and differentiation opportunities. Focus on information that helps candidates understand the competitive landscape.",
+              "role": "system"
+            },
+            {
+              "content": "=Research competitors of {{ $('📋 Interview Prep Form').item.json.companyName }} and provide competitive analysis for interview preparation:\n\n1. Who are the company’s main direct and indirect competitors?\n2. How does the company’s market share compare to competitors?\n3. What makes the company stand out (unique strengths, differentiators)?\n4. How do competitor products/services compare in quality and features?\n5. What pricing or business model differences exist across competitors?\n6. What strategic moves have rivals made recently (mergers, launches, partnerships)?\n7. What are the key strengths and weaknesses of main competitors?\n8. Where are the biggest gaps/opportunities for the company to compete?\n9. How do competitors attract and retain top talent?\n10. What level of investment do competitors put into innovation and R&D?\n11. Ask 5-6 Questions on above research for the interview preperation\n\nCompany: {{ $('📋 Interview Prep Form').item.json.companyName }}\n\nWebsite:{{ $('📋 Interview Prep Form').item.json.companyWebsite }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "a36e389a-7263-429f-bacd-c616f517ccb1",
+      "name": "🎯 Competitive Intelligence",
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        608
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "perplexityApi": {
+          "id": "55GbWAP0h8CmTgIt",
+          "name": "Perplexity account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a comprehensive behavioral interview simulation for this company \nCandidate Background:\n{{ $json.output }}\n\nJob Requirements & Company Culture:\n{{ $node[\"🏢 Deep Company Research\"].json.choices[0].message.content }}\n\nCreate:\n1. 8-10 behavioral questions using STAR method\n2. Questions targeting: Leadership, Teamwork, Problem-solving, Adaptability, Conflict resolution, Cultural fit\n3. For each question provide:\n   - STAR framework guidance\n   - What the interviewer is looking for\n   - Red flags to avoid\n   - Scoring criteria (1-5 scale)\n   - Sample strong responses\n4. Role-specific behavioral scenarios\n5. Follow-up questions for deeper insights\n6. Cultural fit assessment based on company values\n\nFormat with clear structure and actionable guidance.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -1280,
+        -384
+      ],
+      "id": "495bcae1-8d5f-428d-85bb-5c313a1e298c",
+      "name": "🎭 Behavioral Interview Simulator"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create technical/case interview content for Candidate Background:\n{{ $json.output }}\n\nJob Requirements & Company Culture:\n{{ $node[\"🏢 Deep Company Research\"].json.choices[0].message.content }}\n\nCreate:\n1. 5-7 technical questions/problems appropriate for the role\n2. System design challenges (if applicable)\n3. Case studies relevant to the industry\n4. Coding problems (if technical role)\n5. For each assessment provide:\n   - Common pitfalls\n   - Follow-up questions\n6. Difficulty progression from warm-up to challenging\n7. Real-world scenarios the company might face\n\nTailor complexity to the interview round and candidate background.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -1264,
+        16
+      ],
+      "id": "fc1a191d-0102-439c-8467-93524f7acb5f",
+      "name": "⚙️ Technical Assessment Generator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1280,
+        -144
+      ],
+      "id": "5a0da90b-1c9f-44fc-a34c-511e1cb1c257",
+      "name": "🧠 OpenAI GPT-4 for Agents",
+      "credentials": {
+        "openAiApi": {
+          "id": "u00gLXrkZ7rqx8f3",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1680,
+        -160
+      ],
+      "id": "6ff77afe-0f5f-4a46-ad8c-7a603dcd2747",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1Yym950r2M3RmBEynYcXD-Zk4qF1-bQDSMokqStrHMgY/edit?usp=sharing",
+        "simple": false,
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.choices[0].message.content }}\n{{ $json.citations }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        400
+      ],
+      "id": "91ef4e97-74a5-493e-bcda-88be621a6879",
+      "name": "Update a document2",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "mOJMTku9UYxZn9Ze",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1Yym950r2M3RmBEynYcXD-Zk4qF1-bQDSMokqStrHMgY/edit?usp=sharing",
+        "simple": false,
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        -192
+      ],
+      "id": "9ba8eb00-f2b3-4c19-b0e1-2990926dcafb",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "mOJMTku9UYxZn9Ze",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Input your details\n** Enter your information in the form",
+        "height": 448,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3328,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "f9f63089-1848-4882-b80a-dba9ee20fdac",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Binary file to Text \n** Convert Resume from Binary File to text",
+        "height": 368,
+        "width": 432,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2768,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "c16852c4-94de-46b2-b9a2-2652b60e9027",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Question on Resume\n**Extract Info from Resume to ask questions ",
+        "height": 544,
+        "width": 432,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2240,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "a94e7081-9a4e-4a42-97bd-0a464ce9c98e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Documents and inmporatant Citation for the company\n**Does online research\nGenerate document\ngenerate questions",
+        "height": 704,
+        "width": 704,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2320,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "576c4853-62f3-4b10-894e-18f1011141af",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Resume Specific Questions and Guidance on how to answer them\n**",
+        "height": 704,
+        "width": 720,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1552,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "f2c81004-7dc2-4387-86c1-98e436a1f9d0",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Update Final Document\n",
+        "height": 928,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -768,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "ce27767d-97cb-4fe8-943a-5a48aa2f9e1c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow Developed by\n** Rahul Deshpande\n** rahuuldeshpande@gmail.com\n** https://www.linkedin.com/in/rahulsatishdeshpande/",
+        "width": 1248
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -944,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "84455c26-1388-420a-a5a9-736798124e0b",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {
+    "Merge": [
+      {
+        "json": {
+          "output": "1. Professional Experience and Achievements: \n\nThe candidate has extensive experience in product and project management, business intelligence and software development, with roles at Kyaani GmbH, Foxxum GmbH, Kaayoo GmbH, Home24 SE, Mister Sandman GmbH, and BNY Mellon Technology. They have led numerous successful initiatives, such as achieving a 25% increase in Monthly Active Users (MAUs) and reducing churn by 10% in 6 months at Kyaani GmbH. Moreover, they were capable of accelerating the time-to-market by 25%, thereby aligning feature releases with market demand and business objectives at Foxxum GmbH.\n\n2. Technical Skills and Certifications: \n\nThe candidate possesses a wide range of technical skills, including SQL, APIs, Tableau, Python, Looker, Amplitude, and Mixpanel, among others. They're also experienced in AI technologies and tools like GPT, Claude, Gemini, and AI workflow automation using n8n. Their expertise in AI, tradition, and agile methodologies could be highly valuable for the AI-driven mission of Choco GmbH. Their certifications include Scrum Product Owner and Data Product Management Bootcamp.\n\n3. Education and Projects: \n\nThe candidate holds a B. Tech degree in Computer Engineering and an MBA in Business Administration & Engineering, which provides a base for technical knowledge and business acumen. They have worked on multiple projects including building SaaS and CTV applications, integrating real-time mapping systems, and creating data-driven business intelligence dashboards.\n\n4. Career Progression and Gaps: \n\nThe candidate's career progression is evident starting as a Software Developer at BNY Mellon Technology, then moving onto Business Intelligence Analyst, progressing to Freelance Product Manager, and currently working as a Product Manager at Kyaani GmbH. They have shown a steady growth in their career, with their latest role aligning directly with the target role. There doesn't appear to be any significant gaps in their employment history.\n\n5. Alignment with Target Role: \n\nThe candidate's experience in product and project management, business intelligence, technical skills, and the ability to work with AI technologies align well with the target role at Choco GmbH. Their proven expertise in driving product vision, market research, prioritization and coordination of product development are directly relevant to the Product Manager E-Commerce position.\n\n6. Strengths and Areas for Improvement: \n\nStrengths include their technical skills, AI knowledge, and their adaptability in managing both product and project roles. They might need to improve their German language proficiency if expected to communicate with local teams or stakeholders at Choco GmbH, given their proficiency is at an elementary level.\n\n7. Interview Questions:\n\n- Can you elaborate on your experience with AI-driven products and how it resulted in business growth?\n- How would your experience translate to a high-stakes, fast-growing AI product at Choco GmbH?\n- Can you share cases where you had to think three steps ahead and how it panned out?\n- Explain your approach to managing uncertainty in product development?\n- How have you leveraged data insights to shape product strategy at your previous roles?\n\n8. Key Talking Points:\n\n- Discuss their experience in AI product development.\n- Elaborate on strategies used to increase MAUs and reduce churn rates.\n- Discuss their knowledge and usage of tools like SQL, API, Tableau, and Python.\n- Highlight their ability to translate complex API requirements into development tasks.\n- Discuss their proficiency in executing agile methodologies.\n  \nRecommendations: \n\nThe candidate should prepare to discuss their technical skills, AI competencies, product management achievements, and their approach to risk-taking and uncertainty. They should also be ready to present cases where they have successfully applied these skills to drive meaningful business outcomes.",
+          "id": "fb270638-3144-4681-b668-b3bf4bf01877",
+          "model": "sonar-pro",
+          "created": 1756020945,
+          "usage": {
+            "prompt_tokens": 257,
+            "completion_tokens": 1242,
+            "total_tokens": 1499,
+            "search_context_size": "low",
+            "cost": {
+              "input_tokens_cost": 0.001,
+              "output_tokens_cost": 0.019,
+              "request_cost": 0.006,
+              "total_cost": 0.025
+            }
+          },
+          "citations": [
+            "https://canvasbusinessmodel.com/blogs/how-it-works/choco-how-it-works",
+            "https://vizologi.com/business-strategy-canvas/choco-business-model-canvas/",
+            "https://www.businessage.com/post/unicorn-alert-daniel-khachab-tells-us-how-choco-hit-a-1-2bn-valuation",
+            "https://www.clay.com/dossier/choco-funding",
+            "https://app.dealroom.co/companies/choco"
+          ],
+          "search_results": [
+            {
+              "title": "How Does Choco Company Operate? - Canvas Business Model",
+              "url": "https://canvasbusinessmodel.com/blogs/how-it-works/choco-how-it-works",
+              "date": "2025-07-11",
+              "last_updated": "2025-07-11"
+            },
+            {
+              "title": "What is Choco's business model? - Vizologi",
+              "url": "https://vizologi.com/business-strategy-canvas/choco-business-model-canvas/",
+              "date": "2018-11-06",
+              "last_updated": "2025-07-13"
+            },
+            {
+              "title": "Unicorn alert: Daniel Khachab tells us how Choco hit a $1.2bn ...",
+              "url": "https://www.businessage.com/post/unicorn-alert-daniel-khachab-tells-us-how-choco-hit-a-1-2bn-valuation",
+              "date": "2022-11-03",
+              "last_updated": "2025-08-12"
+            },
+            {
+              "title": "How Much Did Choco Raise? Funding & Key Investors | Clay",
+              "url": "https://www.clay.com/dossier/choco-funding",
+              "date": "2023-01-02",
+              "last_updated": "2025-08-05"
+            },
+            {
+              "title": "Choco company information, funding & investors - Dealroom.co",
+              "url": "https://app.dealroom.co/companies/choco",
+              "date": "2018-03-01",
+              "last_updated": "2025-07-02"
+            }
+          ],
+          "object": "chat.completion",
+          "choices": [
+            {
+              "index": 0,
+              "finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "**Choco GmbH** is a Berlin-based foodtech company whose platform digitizes ordering and communication between restaurants and food suppliers, aiming to reduce food waste and increase operational efficiency[1][3][4][5].\n\n---\n\n### 1. Company’s Business Model & Revenue Streams\n\nChoco's **business model** centers around a digital platform connecting restaurants with suppliers, automating and streamlining orders[1][3][4][5]. Its **main revenue streams** include:\n- **Subscription Fees:** Suppliers (and possibly restaurants) pay for access to enhanced platform features[1][2][3].\n- **Transaction Fees:** A percentage charged per order facilitated via the platform[1].\n- **Premium Features:** Revenue from AI-powered tools, advanced analytics, and other specialized services[1][2].\n- **Data & Analytics:** Monetizing actionable insights from platform usage[1][2][5].\n\nThe platform itself is generally free for restaurants, with suppliers paying for premium access and visibility[3][5].\n\n---\n\n### 2. Core Products/Services & Target Customers\n\nChoco provides a **software platform (app and web tools)** for:\n- **Order management** (streamlined, error-reducing ordering process)\n- **Supplier discovery** (digital listing/profile system)\n- **Communication** between restaurants and food suppliers (chat-based interface, intuitive ordering lists)[3][4][5]\n\n**Target customers**:\n- **Restaurants** (from local to chain operations)\n- **Food suppliers/distributors** wanting digital order management and market access[3][5]\n\n---\n\n### 3. Financial Performance (Last 2–3 Years)\n\n- **Annual Revenue (2025):** ~$35 million[1]\n- **Total funding:** $336.3 million across several rounds, with marquee investors like Insight Partners and G Squared[4]\n- Financial valuation (2022): reached **$1.2 billion**, achieving \"unicorn\" status[3]\n- There is limited visibility into EBITDA/profit, but sustained fundraising and growth in platform adoption indicates positive momentum[4][5].\n\n---\n\n### 4. Recent News, Partnerships & Product Launches (Last 6 Months)\n\nAs of June–August 2025:\n- **AI-powered order processing** rolled out, enhancing automation and analytics for suppliers and restaurants[1].\n- Focus on technological advancements and expanded premium offerings[1].\n- There have been ongoing **expansions** in platform capabilities, specifically targeting reduction in food waste and further digitizing supply chain operations[1][3].\n\nNo groundbreaking partnerships or acquisitions were cited for the last 6 months in available sources, but continued fundraising and expansion of toolsets are notable[1][4].\n\n---\n\n### 5. Company Values & Culture\n\nChoco is **mission-driven**, focusing on:\n- **Reducing food waste globally**\n- **Digitizing and optimizing food supply chains**\n- **Sustainability, operational efficiency, and transparency**\n- Encouraging **open collaboration** and continuous innovation[3][5]\n\nThe company aims to enable all clients on their \"digitalisation journey,\" reflecting a culture valuing adaptability and customer-centric solutions[3].\n\n---\n\n### 6. Key Leaders & Decision-Makers\n\n- **Daniel Khachab** – Co-founder & CEO[3][4]\n- **Julian Hammer** – Co-founder\n- **Rogério Da Silva Yokomizo** – Co-founder\n\nThese leaders remain the primary decision-makers, with a leadership team focused on growth, technology, and sustainability[4].\n\n---\n\n### 7. Current Company Challenges\n\n- **Scaling operations** while maintaining platform reliability and customer support\n- **Competition** in the digital food ordering and supply chain space\n- Ensuring **adoption** among traditional suppliers and restaurants resistant to digitization\n- Maintaining growth and innovation while navigating fragmented regional markets and varying regulatory demands[3][5]\n\n---\n\n### 8. Long-term Growth/Expansion Plans\n\n- **Digitize the entire food supply industry by 2026**\n- Expand platform's capabilities with AI, enhanced analytics, and global reach\n- Continuing international expansion and ecosystem development to make food systems more sustainable, efficient, and waste-free[1][3]\n\n---\n\n### 9. Employee Experience (Reviews/Interviews)\n\nEmployee feedback typically highlights:\n- **Fast-paced, growth-focused environment** with a strong mission[4]\n- Opportunities to influence product direction and technology\n- Some employees note **high employee expectations** and rapid changes, which can be both exciting and demanding\n- Collaborative and international team, given the company's Berlin HQ and global ambitions[4]\n\n---\n\n### 10. Hiring Style & Interview Process\n\n- Focuses on **culture fit** and alignment with mission (food waste reduction, sustainability)\n- Interview stages typically include:\n  - **Recruiter screen**\n  - **Case study/product assessment**\n  - **Technical interviews**\n  - **Values & leadership interviews**\n- Candidates may be asked about **e-commerce, SaaS platforms**, and **supply chain digitalization**\n- Process is described as **rigorous but fair**, emphasizing potential for leadership, strategic thinking, and customer empathy\n\n---\n\n### 11. Interview Preparation Questions\n\n- How does Choco balance offering a free platform to restaurants with its need for sustainable monetization?\n- In what ways has the implementation of AI-powered order processing improved supplier and restaurant experiences on Choco's platform?\n- How does Choco address resistance from suppliers/restaurants reluctant to adopt digital solutions?\n- Can you describe a product manager’s role in supporting Choco's mission to reduce food waste and digitize the supply chain?\n- What are the major challenges faced when scaling Choco's operations internationally, and how does product strategy adapt to regional differences?\n- How does Choco ensure its product roadmap aligns with both user needs and the company's sustainability goals?\n\n---\n\n**For a Product Manager E-Commerce role, emphasize understanding of supply chain digitalization, SaaS monetization models, and mission-driven innovation, as well as experience designing for rapidly growing platforms.**"
+              },
+              "delta": {
+                "role": "assistant",
+                "content": ""
+              }
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "output": "Professional Experience and Achievements:\n\n1. The candidate seems to have a versatile background with experience in working with AI-focused software, GTM strategies, and product design.\n2. They have demonstrated product excellence over a period of 3-8 years, specifically in a fast-growing startup environment.\n3. They have a proven user-first mindset, with experience in working closely with users for feedback.\n4. The candidate has successfully built strong and effective relationships with different stakeholders within an organization.\n\nTechnical Skills and Certifications:\n\n1. It is evident that the candidate has a strong technical understanding of AI, Data Science, and APIs.\n2. The candidate also shows the ability to work with cutting-edge technology.\n\nEducation and Projects:  \nNot provided in the resume.\n\nCareer Progression and Gaps:  \nThe candidate has shown a steep career progression, especially in a startup environment. No gaps are indicated in the resume.\n\nAlignment with target role:\nThe candidate seems to have aligned strengths and values with the e-commerce product manager role at Choco, with skills in AI, GTM strategies, project execution, and driving product roadmaps.\n\nStrengths:\n\n1. Product excellence and dedication to user-first mindset\n2. Strong technical understanding of AI and data science\n3. Strong communication skills, with the ability to translate technical specifications into easily understandable terms\n4. Strong eye for talent and tastes for product and design.\n\nAreas for Improvement:\nThe candidate might need to develop an understanding of Choco's specific product and customer base.\n\nInterview Questions:\n1. What kind of AI product have you managed in the past and what was your strategy?\n2. Can you give an example of how you used a user-first mindset in your previous roles?\n3. Can you describe an instance when you were required to think 'three steps ahead'?\n\nKey Talking Points:\n1. The candidate's past experience and key achievements in managing AI products\n2. Their understanding and vision of the AI future.\n3. Examples of their highly effective communication skills.\n4. Their strategies for taking a product to the market. \n\nRecommendations: \nThe candidate should emphasize their AI and data science expertise, given Choco's focus on these technologies. Considering the startup environment at Choco, the experience in a fast-growing startup would be a golden point in the discussion.\n",
+          "id": "189278ea-ff38-46b8-a576-c1b2bc82a4f9",
+          "model": "sonar-pro",
+          "created": 1756020942,
+          "usage": {
+            "prompt_tokens": 257,
+            "completion_tokens": 1160,
+            "total_tokens": 1417,
+            "search_context_size": "low",
+            "cost": {
+              "input_tokens_cost": 0.001,
+              "output_tokens_cost": 0.017,
+              "request_cost": 0.006,
+              "total_cost": 0.024
+            }
+          },
+          "citations": [
+            "https://canvasbusinessmodel.com/blogs/how-it-works/choco-how-it-works",
+            "https://vizologi.com/business-strategy-canvas/choco-business-model-canvas/",
+            "https://www.businessage.com/post/unicorn-alert-daniel-khachab-tells-us-how-choco-hit-a-1-2bn-valuation",
+            "https://www.clay.com/dossier/choco-funding",
+            "https://app.dealroom.co/companies/choco"
+          ],
+          "search_results": [
+            {
+              "title": "How Does Choco Company Operate? - Canvas Business Model",
+              "url": "https://canvasbusinessmodel.com/blogs/how-it-works/choco-how-it-works",
+              "date": "2025-07-11",
+              "last_updated": "2025-07-11"
+            },
+            {
+              "title": "What is Choco's business model?",
+              "url": "https://vizologi.com/business-strategy-canvas/choco-business-model-canvas/",
+              "date": "2018-11-06",
+              "last_updated": "2025-07-13"
+            },
+            {
+              "title": "Unicorn alert: Daniel Khachab tells us how Choco hit a ...",
+              "url": "https://www.businessage.com/post/unicorn-alert-daniel-khachab-tells-us-how-choco-hit-a-1-2bn-valuation",
+              "date": "2022-11-03",
+              "last_updated": "2025-08-12"
+            },
+            {
+              "title": "How Much Did Choco Raise? Funding & Key Investors",
+              "url": "https://www.clay.com/dossier/choco-funding",
+              "date": "2025-04-07",
+              "last_updated": "2025-08-05"
+            },
+            {
+              "title": "Choco company information, funding & investors",
+              "url": "https://app.dealroom.co/companies/choco",
+              "date": "2018-03-01",
+              "last_updated": "2025-07-02"
+            }
+          ],
+          "object": "chat.completion",
+          "choices": [
+            {
+              "index": 0,
+              "finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "Choco GmbH is a Berlin-based **food tech company** whose digital platform connects restaurants and food suppliers to optimize ordering and reduce food waste[3][4][5]. The company’s business model focuses on efficiency, sustainability, and digitization within the gastronomy supply chain, targeting operational pain points for both restaurants and suppliers[1][3][5].\n\n### 1. Business Model & Revenue Streams\n- **Platform-driven:** Choco provides a free ordering platform for restaurants to connect with suppliers; core monetization stems from the supplier and value-added service side[1][2][5].\n- **Revenue streams include:**\n  - **Subscription fees** paid primarily by suppliers for enhanced platform access[1][2].\n  - **Transaction fees** for orders processed via the platform[1].\n  - **Premium features** such as advanced analytics, data services, and specialized digital tools[1][2][5].\n  - **Data & analytics sales** targeted at both restaurants and suppliers for operational insights[1].\n\n### 2. Core Products/Services & Target Customers\n- **Ordering app:** Enables quick and error-free communication and order placement between restaurants and their suppliers using an intuitive chat-like interface and order lists[3][4][5].\n- **Automated order processing:** Reduces manual work and errors, saving time and minimizing food waste[3].\n- **Target customers:**\n  - **Restaurants/cafés/food service venues** seeking to digitize supply chain management.\n  - **Food suppliers/distributors** transitioning from manual order processes to digitized workflows[3][4][5].\n\n### 3. Financial Performance (Last 2–3 Years)\n- As of June 2025, Choco reported **annual revenue of approximately $35 million**, marking strong growth in the food tech sector[1].\n- Valuation reached **$1.2 billion**, with over **$336 million in total funding** raised (latest round February 2023)[4].\n- Choco is widely seen as financially healthy, backed by major investors (Insight Partners, G Squared), and poised for further expansion[4].\n\n### 4. Recent News, Partnerships, and Product Launches (Last 6 Months)\n- In the past six months, notable developments include:\n  - **Continued roll-out of AI-powered order management features** to further reduce manual data entry and streamline the supply chain[1].\n  - Expansion efforts to onboard more suppliers and restaurants, especially in new European and North American markets[1].\n  - No major recent partnerships were publicly disclosed, but continued investment signals active business development[4].\n\n### 5. Values and Culture\n- **Mission-driven:** Aims to eliminate food waste and digitize the food supply chain worldwide[3][5].\n- **Values:** Efficiency, sustainability, innovation, openness, and customer-centricity form the cultural foundation[5].\n- **Work environment:** Choco's team emphasizes continuous learning, ownership, and impact-oriented collaboration.\n\n### 6. Key Leaders & Decision-Makers\n- **Daniel Khachab (CEO, Co-founder)**\n- **Julian Hammer (Co-founder)**\n- **Rogério Da Silva Yokomizo (Co-founder)[4]**\n- Leadership is entrepreneurial, with a proven track record of scaling tech businesses quickly in competitive markets.\n\n### 7. Current Challenges\n- **Market digitization pace:** Convincing a traditionally analog industry to adopt new technologies[3].\n- **Competitive pressure:** Platform space in food tech is rapidly evolving, with rivals offering overlapping solutions.\n- **Retention and engagement:** Ensuring both suppliers and restaurants continue to use and expand platform features.\n\n### 8. Long-Term Growth & Expansion Plans\n- **Global vision:** Aims to digitize and optimize the entire food service supply chain by 2026[3].\n- Continued **international expansion**, with particular focus on North America and further European penetration[1][4].\n- Investment in **AI/automation features** and platform enhancements to deepen market share and improve operational value for users[1].\n\n### 9. Employee Experience (Reviews & Interviews)\n- Employees describe Choco as **dynamic, mission-driven, and collaborative**.\n- People cite significant opportunities for impact, responsibility, and rapid personal development.\n- Some staff reporting stresses related to rapid growth and high expectations, typical for scaling tech startups.\n\n### 10. Hiring Style & Interview Process\n- **Practical and rigorous:** Interview process involves case studies, problem-solving exercises, and direct assessment of product management skills, with emphasis on past impact and ownership.\n- Candidates should expect **cross-functional interviews**, including with engineering, design, and commercial stakeholders.\n- Culture fit, passion for sustainability, and entrepreneurial mindset are highly valued.\n\n---\n\n### 11. Sample Interview Questions Based on Research\n\n1. How would you leverage Choco's existing platform features to drive adoption among suppliers hesitant to digitize their business?\n2. What strategies would you use to expand Choco's footprint in a new region, considering local competition and food supply chain culture?\n3. How can Choco utilize its data and analytics capabilities to create new revenue streams or improve customer retention?\n4. Describe a challenging situation in scaling a digital marketplace you have faced. How would you apply those lessons at Choco?\n5. In the face of rapid company growth, how would you ensure teams remain aligned with Choco's sustainability mission?\n6. What product management methodologies do you find most effective for fast-paced, mission-driven startups like Choco, and why?\n\nThis synthesis provides a comprehensive overview relevant for a Product Manager E-Commerce interview at Choco GmbH, leveraging up-to-date and authoritative sources."
+              },
+              "delta": {
+                "role": "assistant",
+                "content": ""
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "📋 Interview Prep Form": {
+      "main": [
+        [
+          {
+            "node": "📄 Resume File Extractor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 Input Merger",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "📄 Resume File Extractor": {
+      "main": [
+        [
+          {
+            "node": "🔗 Input Merger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 Input Merger": {
+      "main": [
+        [
+          {
+            "node": "🤖 Resume Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🏢 Deep Company Research",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📈 Industry Trends Analyzer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🎯 Competitive Intelligence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Resume Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🏢 Deep Company Research": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Update a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📈 Industry Trends Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Update a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎯 Competitive Intelligence": {
+      "main": [
+        [
+          {
+            "node": "Update a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎭 Behavioral Interview Simulator": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Technical Assessment Generator": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 OpenAI GPT-4 Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🤖 Resume Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 OpenAI GPT-4 for Agents": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🎭 Behavioral Interview Simulator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "⚙️ Technical Assessment Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "🎭 Behavioral Interview Simulator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "⚙️ Technical Assessment Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document2": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1487cbd5-909e-43ba-8f4a-547b6714d6e1",
+  "meta": {
+    "instanceId": "ac03b386628d235b192281225826d4f968d90553447b16e551e2a679415522ef"
+  },
+  "id": "kfh5hm1GXNi8FvBr",
+  "tags": []
+}
