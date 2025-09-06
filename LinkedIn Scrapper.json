@@ -1,0 +1,752 @@
+{
+  "name": "LinkedIn Scrapper",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "LinkedIn Job Extraction",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Job Tittle",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Location",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "No.of.rows Required",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Job Posting Time",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "r86400"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Experience level",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Intern"
+                  },
+                  {
+                    "option": "Assistant"
+                  },
+                  {
+                    "option": "Junior"
+                  },
+                  {
+                    "option": "Mid-Senior"
+                  },
+                  {
+                    "option": "Director"
+                  },
+                  {
+                    "option": "Executive"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Job Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Part-time"
+                  },
+                  {
+                    "option": "Full-time"
+                  },
+                  {
+                    "option": "Contract"
+                  },
+                  {
+                    "option": "Internship"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Work Schedule",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "On-site"
+                  },
+                  {
+                    "option": "Remote"
+                  },
+                  {
+                    "option": "Hybrid"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        0
+      ],
+      "id": "46d49511-ca17-49c5-85bb-68082e53c554",
+      "name": "Form Trigger",
+      "webhookId": "88355b69-d80c-4f89-8a04-b53afeb23229"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/worldunboxer~rapid-linkedin-scraper/run-sync-get-dataset-items?token=apify_api_KqUJxBUd5B9Tax5csIGL2hd4a26tOa2GcrBq",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "value": "=Bearer apify_api_GXRKc4ckxV8Hz5O7J2GG51XuyRZg1X2RUydE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"job_title\": \"{{ $json['Job Tittle'] }}\",\n  \"jobs_entries\": {{ $json['No.of.rows Required'] | int }},\n  \"location\": \"{{ $json.Location }}\",\n  \"job_post_time\": \"{{ $json['Job Posting Time'] }}\",\n  \"start_jobs\": 0\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "b7525acf-316a-4ecb-9223-88e31d94f559",
+      "name": "Scrapping from LinkdIn"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = items.map(item => item.json);\nconst cleanedData = inputData.map(job => {\n  return {\n    job_id: job.job_id || \"\",\n    time_posted: job.time_posted ||\"\",\n    job_url: job.job_url || \"\",\n    title: job.job_title || \"\",\n    company_name: job.company_name || \"\",\n    company_url: job.company_url || \"\",\n    location: job.location || \"\",\n    job_description: job.job_description ? job.job_description.trim() : \"\",\n    job_function: job.job_function || \"\",    \n    industries: job.industries || []      \n  };\n});\nreturn cleanedData.map(d => ({ json: d }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7708d897-04ee-438a-89ae-7a46c3cd09fc",
+      "name": "Cleaning Data"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "144o0DxyUxeNbm6xG_EBEUaCn4fs6Kzkaiq7jQPMrQ_s",
+          "mode": "list",
+          "cachedResultName": "LinkdIn n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/144o0DxyUxeNbm6xG_EBEUaCn4fs6Kzkaiq7jQPMrQ_s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/144o0DxyUxeNbm6xG_EBEUaCn4fs6Kzkaiq7jQPMrQ_s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "job_url": "={{ $json.job_url }}",
+            "title": "={{ $json.title }}",
+            "company_name": "={{ $json.company_name }}",
+            "company_url": "={{ $json.company_url }}",
+            "location": "={{ $json.location }}",
+            "Job desccription": "={{ $json.job_description }}",
+            "Time Posted": "={{ $json.time_posted }}"
+          },
+          "matchingColumns": [
+            "job_id"
+          ],
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "job_url",
+              "displayName": "job_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company_url",
+              "displayName": "company_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job desccription",
+              "displayName": "Job desccription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time Posted",
+              "displayName": "Time Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        592,
+        208
+      ],
+      "id": "122e0512-af6a-48c0-b907-220269cee385",
+      "name": "Updating sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UMlViVpxUbI8XC38",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/organizations/enrich",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $json.output.domain }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -16
+      ],
+      "id": "0c7d75c3-f6a3-4aaa-9cc7-35862561fee1",
+      "name": "People Search",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZBFgTF89wXZAc0nD",
+          "name": "Shreya's Apollo cred"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/code_crafter~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_KqUJxBUd5B9Tax5csIGL2hd4a26tOa2GcrBq",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer apify_api_GXRKc4ckxV8Hz5O7J2GG51XuyRZg1X2RUydE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"include_email\": true,\n  \"totalRecords\": 510,\n  \"url\": \"https://app.apollo.io/#/people?page=1&personTitles[]=ceo&personTitles[]=founder&personTitles[]=head%20of%20sales&personTitles[]=owner&personTitles[]=sales%20manager&organizationIds[]={{ $json.organization_id }}\"\n}\n\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        -16
+      ],
+      "id": "5447d80e-ac20-4b7a-8d8b-ea4e9242d4bd",
+      "name": "People enrich"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "13e0cf14-a6db-4854-90b6-97bcee3d923a",
+      "name": "Wait",
+      "webhookId": "f05ff129-cbf2-4395-98e6-93dc30b33258"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Act as the Company Details Finder. Find and verify company information from LinkedIn.\n\nInputs:\ncompany_name: {{ $json.company_name }}\ncompany_linkedinurl: {{ $json.company_url }}\nLocation: {{ $json.location }}\nIndustries: {{ $json.industries }}\n\nTasks:\n1. Extract from LinkedIn: company website, name, location, industry, description\n2. Verify input data matches LinkedIn profile\n3. Extract domain from LinkedIn (remove https://, www.)\n4. If no website found, infer domain from company name pattern\n5. Validate domain legitimacy (avoid social media, directories, parked sites)\n\nOutput:\n- Company Name: [from LinkedIn]\n- Domain: [clean domain only]\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        0
+      ],
+      "id": "aeab6ec9-ad45-48f5-b7d0-8d951e5dd8b5",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-2025-08-07"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        208
+      ],
+      "id": "81d705f0-53cf-4dc0-b46c-e369f0d5c810",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eCq57XlUHIiWXbzt",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"company_name\": \"\",\n\t\"domain\": \"\"\n     \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "036a1ac0-3609-4659-92d5-c057146333c3",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "*The AI Agent uses the company name, company linkedIN URL to find the company Domain*",
+        "height": 80,
+        "width": 278,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "a450f105-eca1-4256-a911-2f132c05ea96",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "*Updates the scraped data into sheets*",
+        "height": 80,
+        "width": 150,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "7afdec68-5847-4c2c-8e2e-d8cac16a5bb5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "*Using the domain name we search for people and enrich their contact using Apollo*",
+        "height": 80,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "0abf195b-af7e-46bb-ac94-1f2556146d0f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "*Updates the sheet with enriched people data*",
+        "height": 80,
+        "width": 150,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2032,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "e5cddc57-61a2-442a-a864-eedc476dfdf9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract Organization ID and Name - N8N Code Node\n\nconst inputData = $input.all();\n\ntry {\n  const outputData = inputData.map(item => {\n    const org = item.organization || item.json?.organization || item;\n    return {\n      organization_id: org.id || 'N/A',\n      organization_name: org.name || 'N/A'\n    };\n  });\n  \n  return outputData.map(company => ({ json: company }));\n  \n} catch (error) {\n  console.error('Error processing companies:', error);\n  throw error;\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -16
+      ],
+      "id": "a68bf223-b6ea-4bf8-8447-4d10b98ba40c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1HjSjxHOVE4z85lM7wIfs9F89YX0JaLiykdz2mZK8UJ8",
+          "mode": "list",
+          "cachedResultName": "LinkedIn people",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HjSjxHOVE4z85lM7wIfs9F89YX0JaLiykdz2mZK8UJ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HjSjxHOVE4z85lM7wIfs9F89YX0JaLiykdz2mZK8UJ8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First Name": "={{ $json.first_name }}",
+            "Last Name": "={{ $json.last_name }}",
+            "LinkedIn URL": "={{ $json.linkedin_url }}",
+            "Title": "={{ $json.title }}",
+            "Email": "={{ $json.email }}",
+            "email_status": "={{ $json.email_status }}"
+          },
+          "matchingColumns": [
+            "First Name"
+          ],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_status",
+              "displayName": "email_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1760,
+        -16
+      ],
+      "id": "946040cb-1451-4f19-a36e-cbc125c4deff",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UMlViVpxUbI8XC38",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Scrapping from LinkdIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrapping from LinkdIn": {
+      "main": [
+        [
+          {
+            "node": "Cleaning Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleaning Data": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Updating sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "People Search": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "People enrich": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "People Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "People enrich",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Updating sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "970ba13e-286b-4386-9c0a-c6360cbae1fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9ed3b49e96399c647b63a1a3643de60fec30509a86483f2aa5625a86cd56a6a8"
+  },
+  "id": "1xv13ZrlSmK4ODk6",
+  "tags": []
+}

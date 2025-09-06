@@ -1,0 +1,1054 @@
+{
+  "name": "Exhibitors Scrapping Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/extract",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fc-df149e96c71f4b16882a5b72e8d1d2e0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\"{{ $json['Website URL'] }}\"],\n  \"prompt\": \"Extract the logo link of the event, event location, event date, exhibitors' names, booth numbers, and descriptions of the exhibitors.\",\n  \"schema\": {\n  \"type\": \"object\",\n  \"properties\": {\n    \"event\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"logo_link\": {\n          \"type\": \"string\"\n        },\n        \"location\": {\n          \"type\": \"string\"\n        },\n        \"date\": {\n          \"type\": \"string\"\n        },\n        \"exhibitors\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"name\": {\n                \"type\": \"string\"\n              },\n              \"booth_number\": {\n                \"type\": \"string\"\n              },\n              \"description\": {\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"name\"\n            ]\n          }\n        }\n      },\n      \"required\": [\n        \"logo_link\",\n        \"location\",\n        \"date\",\n        \"exhibitors\"\n      ]\n    }\n  },\n  \"required\": [\n    \"event\"\n  ]\n},\n  \"scrapeOptions\": {\n    \"onlyMainContent\": true,\n    \"timeout\": 30000,\n    \"waitFor\": 3000\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        -656
+      ],
+      "id": "9f7ba37c-746c-42ab-80ff-986b74e422ee",
+      "name": "Extract"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff812e47-d747-4f1a-8fa8-9f3d40ec2acd",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        -672
+      ],
+      "id": "5255a52f-e6df-486e-b466-74742118f0a4",
+      "name": "If",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.firecrawl.dev/v1/extract/{{ $('Extract').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fc-df149e96c71f4b16882a5b72e8d1d2e0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        -656
+      ],
+      "id": "67cd6c18-5ecf-40ea-918d-e6146f45f3c3",
+      "name": "Get Results"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -656
+      ],
+      "id": "33d2b1db-583a-4ee7-9387-2d465c0bc23a",
+      "name": "30 Secs",
+      "webhookId": "9c6df71e-797b-4e7c-a439-1188fe66d222"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        -656
+      ],
+      "id": "d59d5c4a-902c-43fc-b2a5-d1a1f0ef8606",
+      "name": "10 Seconds",
+      "webhookId": "872d3a7e-aff4-4beb-a584-8ab0c4de5e71"
+    },
+    {
+      "parameters": {
+        "formTitle": "WEB SCRAPE",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Website URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        -656
+      ],
+      "id": "95e1e039-02b8-4be6-bb0c-a8647aeec24f",
+      "name": "On form submission",
+      "webhookId": "f25b8786-dd33-4c72-9e13-dca3baa47911"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=- Use Web Search and find the name of the event based on the logo URL: \"{{ $json.logo_link }}\"\n\n- Using the name of the companies \"\" and description of the company \"{{$json.description}}\" search for the correct domain of the companies before returning the domain. Go through the website and verify whether it matches the description or not, and then return it as output.\n\nThe output format should be:\n{\n  \"event_name\":\"<event_name>\",\n  \"event_date\":\"{{ $json.event_date }}\",\n  \"exhibitor_name\":\"{{ $json.exhibitor_name }}\",\n  \"event_location\":\"{{ $json.event_location }}\",\n  \"company_domain\":\"<domain.subdomain>\"\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        1872,
+        -656
+      ],
+      "id": "5c752d36-381f-4d7a-9790-b44f7c19aac9",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        -448
+      ],
+      "id": "77c18a21-4241-4877-bb57-5cca275e30b6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eCq57XlUHIiWXbzt",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst updatedItems = items\n  .map((item) => {\n    const event = item?.json?.data?.event;\n    const exhibitors = event?.exhibitors.map((exhibitor) => {\n      return {\n        event_date: event?.date,\n        event_location: event?.location,\n        logo_link: event?.logo_link,\n        exhibitor_name: exhibitor?.name,\n        booth_number: exhibitor?.booth_number,\n        description: exhibitor?.description,\n      };\n    });\n    return exhibitors;\n  })\n  .flat();\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        -656
+      ],
+      "id": "f5617769-2687-4dce-a111-9eca3001b12f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"event_name\": \"RE+\",\n  \"event_date\": \"Sep. 8-11\", \n  \"exhibitor_name\": \"Built Robotics\",\n  \"event_location\": \"Las Vegas, NV\",\n  \"company_domain\": \"builtrobotics.com\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        -448
+      ],
+      "id": "db8228db-7876-4f1d-8ad5-bbf4b96c576c",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apollo.io/api/v1/organizations/enrich",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $json.company_domain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2576,
+        -656
+      ],
+      "id": "f00b048c-a3f0-4b13-9aa0-5a4ae587dc5d",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZBFgTF89wXZAc0nD",
+          "name": "Shreya's Apollo cred"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4752,
+        -656
+      ],
+      "id": "54c7762b-43d6-4514-8c22-0bed46a9301f",
+      "name": "Wait1",
+      "webhookId": "ead1bafc-ef06-4565-b6d6-8a605f8d8216"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/code_crafter~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_KqUJxBUd5B9Tax5csIGL2hd4a26tOa2GcrBq",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer apify_api_GXRKc4ckxV8Hz5O7J2GG51XuyRZg1X2RUydE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"include_email\": true,\n  \"url\": \"https://app.apollo.io/#/people?page=1&personTitles[]=sales%20manager&personTitles[]=ceo&prospectedByCurrentTeam[]=no&sortByField=%5Bnone%5D&sortAscending=false&organizationIds[]={{ $json.organization_id }}\"\n}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3104,
+        -672
+      ],
+      "id": "49e162a4-a29d-41be-961a-c066ef687956",
+      "name": "Scrapping Data from Apollo"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const person = item.json;\n  return {\n    json: {\n      name: `${person.first_name ?? \"\"} ${person.last_name ?? \"\"}`.trim() || \"N/A\",\n      email: person.email ?? \"N/A\", \n      company: person.organization_name ?? \"N/A\",\n      linkedin: person.linkedin_url ?? \"N/A\",\n      location: `${person.city ?? \"\"}, ${person.state ?? \"\"}`.trim() || \"N/A\",\n      title: person.title ?? \"N/A\",\n    \n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        -672
+      ],
+      "id": "d648b411-2bea-429f-a231-37fd1b55c6cd",
+      "name": "Cleaning the Data"
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://emailverifier.reoon.com/api/v1/verify?email=\" + $json.email + \"&key=pctHzHJAkgCeYQnaxjjs2JKEffLxoTIm\" }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4992,
+        -656
+      ],
+      "id": "234b410c-d3ba-496b-99b3-9105fd1aa946",
+      "name": "Email Verification"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1WKtMlL83-_39kqp73fRrPqzXtBKJqYmxzfvNE5ltjMQ",
+          "mode": "list",
+          "cachedResultName": "N8N Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WKtMlL83-_39kqp73fRrPqzXtBKJqYmxzfvNE5ltjMQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WKtMlL83-_39kqp73fRrPqzXtBKJqYmxzfvNE5ltjMQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email status": "={{ $json.status }}"
+          },
+          "matchingColumns": [
+            "email status"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email status",
+              "displayName": "email status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        5216,
+        -656
+      ],
+      "id": "656e4966-8e6e-4625-9c85-13f0ef1a4565",
+      "name": "updating email status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UMlViVpxUbI8XC38",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "=Apollo_Data_{{ $now.format(\"D\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        3744,
+        -416
+      ],
+      "id": "376f6416-52fa-4f36-911d-909d3cdc7a6f",
+      "name": "Create spreadsheet",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UMlViVpxUbI8XC38",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3872,
+        -656
+      ],
+      "id": "65f85587-0d33-4364-ab80-e09f56fb294a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4080,
+        -656
+      ],
+      "id": "b12ade38-b272-4982-bd59-8a589069167a",
+      "name": "Wait2",
+      "webhookId": "66b316e3-9ae7-4af5-9603-21cabf7ab1cb"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3552,
+        -672
+      ],
+      "id": "0c893719-072d-40e4-9c46-5eff5aefe988",
+      "name": "Wait3",
+      "webhookId": "7b4413dc-d94a-4c46-857c-f2a90dd75255"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $node[\"Create spreadsheet\"].json[\"spreadsheetId\"] }}\n",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "linkedin",
+              "displayName": "linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spreadsheetId",
+              "displayName": "spreadsheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "properties",
+              "displayName": "properties",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sheets",
+              "displayName": "sheets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spreadsheetUrl",
+              "displayName": "spreadsheetUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        4528,
+        -656
+      ],
+      "id": "cf9e1cf4-9440-4ae5-b247-d255f469ee00",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UMlViVpxUbI8XC38",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## *The form Takes map your show URL as input and scrapes the required data from that website*",
+        "height": 96,
+        "width": 624,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "241cee6e-1585-424e-b9e7-22b5e7fa9aa1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## *Using scraped exhibitor name, description the AI Agent finds the Domain name of the Exhibitor*",
+        "height": 96,
+        "width": 576,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "fba3ffd9-2bae-4673-a54c-eedcdcf2fa56",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## *Using the exhibitor Domain name we export the organization details from Apollo, next  uses the ICP to shortlist them*",
+        "height": 112,
+        "width": 496,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2416,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "a21d7b50-b1d7-48b5-be67-3fa18e2c3043",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Company ICP Filter for N8N Code Node\n// Filters B2B tech companies based on size, location, industry, and keywords\n\nconst inputData = $input.all();\n\n// Filter configuration\nconst FILTERS = {\n  minEmployees: 50,\n  country: \"United States\",\n  \n  // Industries to INCLUDE (case-insensitive partial matches)\n  includeIndustries: [\n    \"information technology\",\n    \"computer software\", \n    \"software\",\n    \"technology\",\n    \"saas\",\n    \"cybersecurity\",\n    \"cloud computing\",\n    \"it services\",\n    \"computer hardware\",\n    \"data analytics\",\n    \"artificial intelligence\",\n    \"machine learning\",\n    \"fintech\",\n    \"edtech\",\n    \"healthtech\"\n  ],\n  \n  // Industries to EXCLUDE (case-insensitive partial matches)\n  excludeIndustries: [\n    \"marketing services\",\n    \"advertising\",\n    \"marketing agency\",\n    \"digital marketing\",\n    \"public relations\",\n    \"media services\",\n    \"marketing consultancy\",\n    \"adtech\",\n    \"advertising agency\"\n  ],\n  \n  // Keywords to INCLUDE (must have at least one)\n  includeKeywords: [\n    \"b2b\",\n    \"software\",\n    \"saas\",\n    \"technology\",\n    \"cloud\",\n    \"artificial intelligence\",\n    \"machine learning\",\n    \"enterprise software\",\n    \"business intelligence\",\n    \"data analytics\",\n    \"cybersecurity\",\n    \"it services\",\n    \"platform\",\n    \"api\"\n  ],\n  \n  // Keywords to EXCLUDE (if any found, exclude company)\n  excludeKeywords: [\n    \"marketing services\",\n    \"advertising agency\",\n    \"marketing consultancy\",\n    \"adtech\",\n    \"digital marketing agency\",\n    \"marketing automation agency\",\n    \"advertising technology agency\",\n    \"marketing consultant\"\n  ]\n};\n\nfunction filterCompanies(companies) {\n  return companies.filter(item => {\n    // Handle different data structures\n    const org = item.organization || item.json?.organization || item;\n    \n    // Skip if no organization data found\n    if (!org) {\n      console.log('No organization data found for item:', JSON.stringify(item).substring(0, 100));\n      return false;\n    }\n    \n    // 1. Employee size filter\n    if (!org.estimated_num_employees || org.estimated_num_employees < FILTERS.minEmployees) {\n      return false;\n    }\n    \n    // 2. Location filter\n    if (org.country !== FILTERS.country) {\n      return false;\n    }\n    \n    // 3. Industry filter\n    const industry = (org.industry || '').toLowerCase();\n    const industries = (org.industries || []).map(i => i.toLowerCase());\n    const allIndustries = [industry, ...industries].join(' ');\n    \n    // Check if industry should be excluded\n    const hasExcludedIndustry = FILTERS.excludeIndustries.some(excludeInd => \n      allIndustries.includes(excludeInd.toLowerCase())\n    );\n    if (hasExcludedIndustry) {\n      return false;\n    }\n    \n    // Check if industry is included (or if no specific industry match, rely on keywords)\n    const hasIncludedIndustry = FILTERS.includeIndustries.some(includeInd => \n      allIndustries.includes(includeInd.toLowerCase())\n    );\n    \n    // 4. Keywords filter\n    const keywords = (org.keywords || []).map(k => k.toLowerCase()).join(' ');\n    \n    // Check for excluded keywords\n    const hasExcludedKeywords = FILTERS.excludeKeywords.some(excludeKey => \n      keywords.includes(excludeKey.toLowerCase())\n    );\n    if (hasExcludedKeywords) {\n      return false;\n    }\n    \n    // Check for included keywords\n    const hasIncludedKeywords = FILTERS.includeKeywords.some(includeKey => \n      keywords.includes(includeKey.toLowerCase())\n    );\n    \n    // Company passes if it has included industry OR included keywords\n    return hasIncludedIndustry || hasIncludedKeywords;\n  });\n}\n\nfunction formatOutput(companies) {\n  return companies.map(item => {\n    // Handle different data structures\n    const org = item.organization || item.json?.organization || item;\n    \n    return {\n      organization_name: org.name || 'N/A',\n      organization_id: org.id || 'N/A',\n      domain: org.primary_domain || 'N/A',\n      website: org.website_url || 'N/A',\n      industry: org.industry || 'N/A',\n      employee_size: org.estimated_num_employees || 0,\n      location: `${org.city || 'N/A'}, ${org.state || 'N/A'}, ${org.country || 'N/A'}`,\n      revenue: org.annual_revenue_printed || org.organization_revenue_printed || 'N/A',\n      founded_year: org.founded_year || 'N/A',\n      keywords_sample: (org.keywords || []).slice(0, 5).join(', ') || 'N/A'\n    };\n  });\n}\n\ntry {\n  // Debug: Log the structure of the first item\n  if (inputData.length > 0) {\n    console.log('First item structure:', JSON.stringify(inputData[0], null, 2).substring(0, 500));\n  }\n  \n  // Filter companies based on ICP criteria\n  const filteredCompanies = filterCompanies(inputData);\n  \n  // Format output\n  const outputData = formatOutput(filteredCompanies);\n  \n  // Log filtering results\n  console.log(`Input companies: ${inputData.length}`);\n  console.log(`Filtered companies: ${outputData.length}`);\n  console.log(`Filter rate: ${inputData.length > 0 ? ((outputData.length / inputData.length) * 100).toFixed(1) : 0}%`);\n  \n  // Return filtered and formatted data\n  return outputData.map(company => ({ json: company }));\n  \n} catch (error) {\n  console.error('Error filtering companies:', error);\n  console.error('Error details:', error.message);\n  if (inputData.length > 0) {\n    console.error('Sample data structure:', JSON.stringify(inputData[0], null, 2).substring(0, 300));\n  }\n  throw error;\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        -672
+      ],
+      "id": "b46f1b78-8cc5-40c9-ba8b-89bd5f51a282",
+      "name": "cleans the data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst updatedItems = items.slice(0, 5).map((item) => item.json.output);\nreturn updatedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        -672
+      ],
+      "id": "b6544c34-1dcc-481c-9b27-32c9665f0bef",
+      "name": "output format"
+    },
+    {
+      "parameters": {
+        "content": "## *With the organization_id we scrape the people data from that organization, using a Apify Scraper*",
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3056,
+        -864
+      ],
+      "typeVersion": 1,
+      "id": "5d4d40c8-9cd2-4a05-8913-d085005321c7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## *Cleans the data and updates the data in a New Spreadsheet*",
+        "height": 96,
+        "width": 464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3920,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "a10f2fdd-0cbc-435e-a868-44b987cd5598",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## *Verifies the emails and updates the email status in the sheet*",
+        "height": 112,
+        "width": 352,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4800,
+        -864
+      ],
+      "typeVersion": 1,
+      "id": "6d3dc0f0-b897-4a6f-a5f1-ac05d54d580f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter all input items that do NOT have \"spreadsheetId\" in their json\nconst cleaned = items.filter(item => !item.json?.spreadsheetId);\nreturn cleaned;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4304,
+        -656
+      ],
+      "id": "37f2b286-a60b-4c34-ab3c-d086725e2200",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "30 Secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "10 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Results": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30 Secs": {
+      "main": [
+        [
+          {
+            "node": "Get Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "output format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Email Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrapping Data from Apollo": {
+      "main": [
+        [
+          {
+            "node": "Cleaning the Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleaning the Data": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Verification": {
+      "main": [
+        [
+          {
+            "node": "updating email status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Create spreadsheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "cleans the data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updating email status": {
+      "main": [
+        []
+      ]
+    },
+    "cleans the data": {
+      "main": [
+        [
+          {
+            "node": "Scrapping Data from Apollo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "output format": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4b28efe4-3551-4a61-9104-c3b6845448c7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9ed3b49e96399c647b63a1a3643de60fec30509a86483f2aa5625a86cd56a6a8"
+  },
+  "id": "WGQEnlXf9RRFUCuL",
+  "tags": []
+}
